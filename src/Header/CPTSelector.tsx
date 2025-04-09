@@ -5,6 +5,7 @@ const CPTSelector = forwardRef((props, ref) => {
   return ( 
     <select name="CPTSelector" key="cpt-selector" ref={ref} multiple className='w-22'>
         <option value="09:00">02:30</option>
+        <option value="09:00">03:00</option>
         <option value="09:00">09:00</option>
         <option value="09:00">11:45</option>
         <option value="09:00">12:15</option>

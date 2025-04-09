@@ -12,6 +12,8 @@ interface Store {
     ligne3: Map<string, string> ;
     ligne4: Map<string, string> ;
   },
+  totalHeadCount: null | number,
+  updateTotalHeadCount: (number) => void,
   updateHeadcount: (newCount: {}) => void;
   infoBoxContent: null | ReactNode;
   infoBoxRef: null | ReactNode;
@@ -29,11 +31,15 @@ const PDPurl = "https://share.amazon.com/sites/MRS1-PDP/Documents%20partages/MRS
 export const uzeStore = create<Store>(
   (set,get)=>({
   singleLaneMapping : {
-    Ligne1: [108,109,110,111,112,113,114,115,116,117],
+    Ligne1: [107,108,109,110,111,112,113,114,115,116,117],
     Ligne2: [209,210,211,212,213,214,215,216],
     Ligne3: [309,310,311,312,313,314,315],
     Ligne4: [407,408,409,410,411,412,413,414,415,416],
     },
+  totalHeadCount: null,
+  updateTotalHeadCount: (number) => set ({totalHeadCount:number}),
+
+
   headcount: {
     ligne1: new Map(),
     ligne2: new Map(),
