@@ -24,7 +24,6 @@ export default function PackLine() {
     const updateTotalHeadCount = uzeStore(s => s.updateTotalHeadCount)
 
     const valuesArray = Object.values(headcount)
-    console.log("Headcount ",valuesArray)
     
     const newTotalHeadCount = valuesArray.reduce((acc,val) => acc + val.size,0)
 
