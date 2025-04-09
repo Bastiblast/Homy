@@ -14,9 +14,7 @@ export default function ShiftPaternSelector() {
         if (!PDPData) return
         const newOptions = new Set()
         PDPData.forEach(row => newOptions.add(row[7]))
-        console.log({newOptions})
         const newArray = [...newOptions]
-        console.log("newArray[0]",newArray[0])
         const filteredData = PDPData.filter(row => row[7] === newArray[0])
 
         if (newArray.length === 1) {

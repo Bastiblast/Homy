@@ -1,16 +1,20 @@
 import { ReactNode } from 'react';
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import {GM_xmlhttpRequest} from '$'
+import {GM_xmlhttpRequest,GM_setValue} from '$'
 import ShiftPaternSelector from '../BonusButton/ShiftPaternSelector';
 
 interface CapacityDetails {
   dataTime: number,
-  CPTInfo : {
+  CPTInfo? : {
     [key: string]: {
       timeRemain: number,
       riskColor: string
     }
+  },
+  userPreference: {
+    UPH: number,
+    TBCPT: number,
   }
 
 }
@@ -65,7 +69,10 @@ export const uzeStore = create<Store>(
   infoBoxContent: null,
   infoBoxRef: null,
   capacityDetails: null,
-  updateCapacityDetails: (CapacityDetails) => set({capacityDetails: CapacityDetails}),
+  updateCapacityDetails: (CapacityDetails:CapacityDetails) => {
+    console.log("updateCapacityDetails receive new details :",CapacityDetails)
+    GM_setValue("Homy_capacityDetails",JSON.stringify(CapacityDetails))
+    set({capacityDetails: CapacityDetails})},
   updateIBR: (newIBR) => {
       console.log("updateIBR to : ",newIBR)
       set({infoBoxRef: newIBR})
@@ -84,6 +91,7 @@ export const uzeStore = create<Store>(
       method: "GET",
       url: PDPurl,
       onload: async function (response) {
+
 
         const jsonStart = response.responseText.indexOf("var activite = {")
         const jsonEnd = response.responseText.indexOf("}",jsonStart)

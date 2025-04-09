@@ -1,5 +1,6 @@
 import React, { RefObject, useEffect, useRef, useState } from 'react'
 import { uzeStore } from '../store/uzeStore'
+import {GM_getValue} from '$'
 
 export default function CapaTable(data) {
     
@@ -8,20 +9,47 @@ export default function CapaTable(data) {
     const headcountRef = useRef<HTMLInputElement>(null)
 
     const totalHeadCount = uzeStore(s => s.totalHeadCount)
-    const noPackerWarning = totalHeadCount === 0 && <span className='col-span-full'>Indiquer un nombre de pack pour calculer la capacité.</span>
+    
+    const [UPH,setUPH] = useState(null)
+    const [timeBeforeFinish,setTimeBeforeFinish] = useState(null)
 
-    const [UPH,setUPH] = useState(145)
-    const [timeBeforeFinish,setTimeBeforeFinish] = useState(45)
     const [customHC,setCustomHC] = useState<null | number>(totalHeadCount)
+    
+    const updateCapacityDetails = uzeStore(s => s.updateCapacityDetails)
+
+    useEffect(() => {
+      const info = JSON.parse(GM_getValue("Homy_capacityDetails"))
+      setUPH(isNaN(info.userPreference.UPH) || !info.userPreference.UPH  ? 145 : info.userPreference.UPH )
+      setTimeBeforeFinish(isNaN(info.userPreference.TBCPT) || !info.userPreference.TBCPT ? 45 : info.userPreference.TBCPT )
+    }, [])
+    
+    
+    useEffect(() => {
+        if (!UPH || !timeBeforeFinish) return
+
+        updateCapacityDetails({
+            dataTime: Date.now(),
+            userPreference: {
+              UPH: UPH,
+              TBCPT: timeBeforeFinish,
+            }
+          
+          })
+  
+    }, [UPH,timeBeforeFinish])
+    
 
     useEffect(() => {
         setCustomHC(totalHeadCount)
     }, [totalHeadCount])
     
+    const noPackerWarning = customHC === 0 && <span className='col-span-full'>Indiquer un nombre de pack pour calculer la capacité.</span>
+
     console.log("CapaTable HC ",totalHeadCount,"custom",customHC)
 
     const dataObject = data.data
     console.log("CapaTable data ",dataObject)
+    if (!dataObject) return
     const noDataWarning = dataObject.size === 0 && <span className='col-span-full'>Il n'y a pas de CPT dans les 4 prochaines heures.</span>
 
     if (!dataObject) return
@@ -31,14 +59,22 @@ export default function CapaTable(data) {
 
     console.log("CapaTable array ",mapToArray)
 
-    const capaTable = (UPH,timeBeforeFinish) => mapToArray.map(CPT => {
+    let procced
 
+    const capaTable = (UPH,timeBeforeFinish) => mapToArray.map((CPT,index) => {
+
+        
+        console.log("CapaTable CPT ",CPT)
 
         if (!UPH || !timeBeforeFinish) return 
 
         const [cpt,listValue] = CPT
 
+        
+        procced = index !== 0 ? new Map([...listValue,...procced]) : listValue
+
         console.log("CapaTable listValue ", listValue)
+        console.log("CapaTable procced ", procced)
 
         const dateCPT = Date.parse(cpt)
 
@@ -46,15 +82,21 @@ export default function CapaTable(data) {
 
         const remainingTime = Math.round((dateCPT - dateAct) / 60 / 1000)
 
-        const deadLineTime = remainingTime - timeBeforeFinish
+        const deadLineTime = remainingTime - timeBeforeFinish > 0 ? remainingTime - timeBeforeFinish : 0
 
         const btNumber = listValue.size
+        const allBtNumber = procced.size
+
         const unitNumber = btNumber > 1 ? [...listValue].reduce((acc,val) => {
             return acc + val[1]
         },0) : [...listValue][0][1]
+        const allUnitNumber = allBtNumber > 1 ? [...procced].reduce((acc,val) => {
+            return acc + val[1]
+        },0) : [...procced][0][1]
+
         const header = cpt.substring(11,16)
 
-        const packerNeeded = Math.round(Number(unitNumber)/UPH/(deadLineTime/60))
+        const packerNeeded = deadLineTime === 0 ? "Finish" : String(Math.round(Number(allUnitNumber)/UPH/(deadLineTime/60))+" pack")
         console.log("CapaTable headers ",header)
 
         const riskStyle = () =>  {
@@ -81,10 +123,10 @@ export default function CapaTable(data) {
             return <>
 
                     <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{header}</div>
-                    <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{btNumber}</div>
-                    <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{unitNumber}</div>
+                    <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{btNumber}-{allBtNumber}</div>
+                    <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{unitNumber}-{allUnitNumber}</div>
                     <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{deadLineTime}min</div>
-                    <div className={'border-b-2 justify-center flex items-center '+colorRisk}>{packerNeeded}pack</div>
+                    <div className={'border-b-2 justify-center flex items-center '+colorRisk}>{packerNeeded}</div>
             
 
             </>
@@ -97,8 +139,24 @@ export default function CapaTable(data) {
             
 
             <div className='text-center px-4 border-r-2 font-bold border-b-2 h-8'>CPT</div>
-            <div className='text-center px-4 border-r-2 font-bold border-b-2 h-8'>BT</div>
-            <div className='text-center px-4 border-r-2 font-bold border-b-2 h-8'>Units</div>
+            <div className='text-xs text-center px-4 border-r-2 font-bold border-b-2 h-8 w-full'>
+                BT
+                <div className='flex justify-between'>
+
+                <span className='text-xs'>Prio</span>
+                <span className='text-xs'>All</span>
+                </div>
+                
+            </div>
+            <div className='text-xs text-center px-4 border-r-2 font-bold border-b-2 h-8 w-full'>
+                Units
+                <div className='flex justify-between'>
+
+                <span className='text-xs'>Prio</span>
+                <span className='text-xs'>All</span>
+                </div>
+                
+            </div>
             <div className='text-center px-4 border-r-2 font-bold border-b-2 h-8'>Remain</div>
             <div className='text-center px-4 font-bold border-b-2 h-8'>Attendu</div>
         

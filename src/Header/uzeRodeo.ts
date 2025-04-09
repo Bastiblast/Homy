@@ -10,6 +10,8 @@ interface uzeRodeo {
   arrayData : null | object[];
   dataPick : null | [string, Map<string,number>][];
   dataCapa : null | Map<string,Map<string,number>>;
+  dataCapaAge : null | number;
+  dataPickAge : null | number;
   refresher: string;
   refresherCapa: string;
   refresherPick: string;
@@ -55,7 +57,9 @@ export const uzeRodeo = create<uzeRodeo>((set,get)=>({
   data: null,
   arrayData: null,
   dataPick: null,
+  dataPickAge: null,
   dataCapa: null,
+  dataCapaAge: null,
   refresher: "done", // modify to loading to load at start
   refresherCapa: "done", // modify to loading to load at start
   refresherPick: "done",
@@ -125,19 +129,32 @@ updatePickRefresher: (status: string) => {
 
     const prioToteDetailFetched = await Promise.all(prioToteDetailPromise)
 
-    const mergeToteDetail = [...prioToteDetailFetched,...inTransitTote]
+    console.log("getRodeoData prioToteDetailFetched",prioToteDetailFetched)
+    console.log("getRodeoData inTransitTote",inTransitTote)
+
+
+
+    const mergeToteDetail = [...prioToteDetailFetched,...[...inTransitTote].map(entries => {return {tote:entries[0],shipments:entries[1]}})]
+
+    console.log("getRodeoData mergeToteDetail",mergeToteDetail)
 
     const mappingCPTpicked = new Map()
+
     pickedArray.forEach(shipment => {
       const cpt = shipment["Expected Ship Date"]
       const tote = shipment["Scannable ID"]
       // add CPT and tote for each
-      if (!mappingCPTpicked.has(cpt)) {
+      console.log("getRodeoData mappingCPTpicker find ",mergeToteDetail.find(bt => bt.tote === tote))
+      if (!mappingCPTpicked.has(cpt) && mergeToteDetail.find(bt => bt.tote === tote)) {
         mergeToteDetail.find(bt => bt.tote === tote) && mappingCPTpicked.set(cpt,new Map().set(tote,mergeToteDetail.find(bt => bt.tote === tote).shipments))
-      } else {mergeToteDetail.find(bt => bt.tote === tote).shipments && mappingCPTpicked.get(cpt).set(tote,mergeToteDetail.find(bt => bt.tote === tote).shipments)}
+      } else if (mergeToteDetail.find(bt => bt.tote === tote)) {
+        mappingCPTpicked.get(cpt).set(tote,mergeToteDetail.find(bt => bt.tote === tote).shipments)
+      } 
     })
 
 
+    console.log("getRodeoData mapping picking",mappingCPTpicking)
+    console.log("getRodeoData mapping picked",mappingCPTpicked)
   const mergedPickingAndPickedArray = new Map()
 
   // @ts-expect-error don't recognize MapIterator
@@ -150,18 +167,25 @@ updatePickRefresher: (status: string) => {
       }
   })  
   
+  console.log("getRodeoData merge + picking",mappingCPTpicked)
+
+
   // @ts-expect-error don't recognize MapIterator
   mappingCPTpicked.entries().forEach(CPT => {
     const [cpt,listValue] = CPT
-    if (mappingCPTpicked.get(cpt)) {
-      mergedPickingAndPickedArray.set(cpt,new Map([...mappingCPTpicked.get(cpt),...listValue]))
+    if (mergedPickingAndPickedArray.get(cpt)) {
+      mergedPickingAndPickedArray.set(cpt,new Map([...mergedPickingAndPickedArray.get(cpt),...listValue]))
       } else {
         mergedPickingAndPickedArray.set(cpt,new Map(listValue))
       }
 
   })
+  console.log("getRodeoData merge + picked",mappingCPTpicked)
 
-    set({dataCapa:mergedPickingAndPickedArray,refresherCapa:"done"})
+
+  console.log("getRodeoData mergedPickingAndPickedArray ",mergedPickingAndPickedArray)
+
+  set({dataCapa:mergedPickingAndPickedArray,refresherCapa:"done",dataCapaAge:Date.now()})
 
     return 
   },
@@ -202,7 +226,7 @@ updatePickRefresher: (status: string) => {
         CPTMap.has(unitExpectShipDate) ? CPTMap.set(unitExpectShipDate, CPTMap.get(unitExpectShipDate) + unitQuantity) : CPTMap.set(unitExpectShipDate,unitQuantity)
     })
 
-    set({refresherPick: "done"})
+    set({refresherPick: "done",dataPickAge:Date.now()})
     
     const CPTArray = [...CPTMap].sort()
     set({dataPick: CPTArray})

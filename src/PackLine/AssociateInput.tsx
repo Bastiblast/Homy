@@ -12,9 +12,7 @@ export default function AssociateInput({poste}) {
     const handleHC = (event) => {
       const poste = event.target.name
       const ligne = "ligne" + event.target.name.substring(0,1)
-      console.log({headcount})
       const newHC = {...headcount}
-      console.log("event.target.defaultValue",event.target.defaultValue)
       event.target.value ? newHC[ligne].set(poste, event.target.value) : newHC[ligne].delete(poste)
       updateHeadcount(newHC)
     }
@@ -49,7 +47,7 @@ export default function AssociateInput({poste}) {
     );
 
   return (
-    <input onChange={handleHC} onKeyUp={handleHC} defaultValue={placeHolder} className="w-24 h-8 bg-grey-100 p-2" type="text" name={poste} id="" />
+    <input onChange={handleHC} onKeyUp={handleHC} defaultValue={placeHolder} className="w-24 h-8 bg-white p-2" type="text" name={poste} id="" />
 
   )
 }

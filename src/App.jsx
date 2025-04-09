@@ -36,9 +36,7 @@ const refreshHandle = () => {
         <InfoBox />
       </header>
 
-      <div className='grid grid-cols-4'>
         <PackLine/>
-      </div>
     </div>
   );
 }
