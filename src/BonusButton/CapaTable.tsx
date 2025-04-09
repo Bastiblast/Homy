@@ -48,9 +48,7 @@ export default function CapaTable(data) {
 
         const deadLineTime = remainingTime - timeBeforeFinish
 
-        //console.log("CapaTable dateCPT ",dateCPT,remainingTime,"min",deadLineTime)
         const btNumber = listValue.size
-        //console.log("listValue",[...listValue][0][1])
         const unitNumber = btNumber > 1 ? [...listValue].reduce((acc,val) => {
             return acc + val[1]
         },0) : [...listValue][0][1]

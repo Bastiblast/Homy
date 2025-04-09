@@ -4,6 +4,17 @@ import { persist } from 'zustand/middleware'
 import {GM_xmlhttpRequest} from '$'
 import ShiftPaternSelector from '../BonusButton/ShiftPaternSelector';
 
+interface CapacityDetails {
+  dataTime: number,
+  CPTInfo : {
+    [key: string]: {
+      timeRemain: number,
+      riskColor: string
+    }
+  }
+
+}
+
 interface Store {
   singleLaneMapping : any;
   headcount: {
@@ -15,6 +26,8 @@ interface Store {
   totalHeadCount: null | number,
   updateTotalHeadCount: (number) => void,
   updateHeadcount: (newCount: {}) => void;
+  capacityDetails: null | CapacityDetails;
+  updateCapacityDetails: (CapacityDetails) => void;
   infoBoxContent: null | ReactNode;
   infoBoxRef: null | ReactNode;
   updateIBR: (newIBR: ReactNode) => void;
@@ -51,6 +64,8 @@ export const uzeStore = create<Store>(
   },
   infoBoxContent: null,
   infoBoxRef: null,
+  capacityDetails: null,
+  updateCapacityDetails: (CapacityDetails) => set({capacityDetails: CapacityDetails}),
   updateIBR: (newIBR) => {
       console.log("updateIBR to : ",newIBR)
       set({infoBoxRef: newIBR})

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React from 'react'
 import { uzeCPTSelection } from './uzeSelectedCPT'
 
 export default function DaySelector() {
@@ -10,23 +10,10 @@ export default function DaySelector() {
     const dateStringToday = `${month}-${today}`
     const dateStringTomorrow = `${month}-${dayTomorrow}`
 
-    const selection = useRef(null)
-
     const updateDay = uzeCPTSelection(s => s.updateDay)
-    const day = uzeCPTSelection(s => s.day)
-
-    useEffect(() => {
-        if (day) return
-        console.log("selection.current",selection.current.value)
-        updateDay(selection.current.value)  
-    })
-    
-    const dateChange = () => {
-       updateDay(selection.current.value)
-    }
 
   return (
-    <select ref={selection} onChange={dateChange}>
+    <select onChange={(e) => updateDay(e.target.value)}>
         <option>{dateStringToday}</option>
         <option>{dateStringTomorrow}</option>
     </select>

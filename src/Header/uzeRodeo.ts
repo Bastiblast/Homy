@@ -166,19 +166,15 @@ updatePickRefresher: (status: string) => {
     return 
   },
   getRodeoData: () => {
-    console.log("refresher is : ",get().refresher)
     if (get().refresher === "done") return
-    console.log("getting data")
     GM_xmlhttpRequest({
     method: "GET",
     url: urlCSVrodeo,
     onload: function(response) {
-      console.log("rodeoRespond with ",response.responseText)
-      const converter = csv().fromString(response.responseText).then((csvRow) => {
+      csv().fromString(response.responseText).then((csvRow) => {
       set({refresher: "done"})
       set({arrayData: csvRow})
       set({data: get().buildJSON(csvRow)})
-
     }
     )
     }
@@ -209,7 +205,6 @@ updatePickRefresher: (status: string) => {
     set({refresherPick: "done"})
     
     const CPTArray = [...CPTMap].sort()
-    console.log("Rodeo alternateConvert result",CPTArray)
     set({dataPick: CPTArray})
 
     

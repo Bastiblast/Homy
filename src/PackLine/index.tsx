@@ -52,7 +52,7 @@ export default function PackLine() {
             <div className='flex flex-row shrink items-center bg-violet-400 p-1 m-1 justify-between rounded-md' key={"L1" + "-" + poste}>
               <div className='flex flex-row w-full items-center'>
 
-                <span className='p-1 m-1 bg-lime-400'>{String(poste)}</span>
+                <span className='p-2 bg-lime-400 rounded-md'>{String(poste)}</span>
                 <div className='flex flex-row'>
 
                 <AssociateInput poste={poste} />
