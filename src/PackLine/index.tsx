@@ -27,9 +27,12 @@ export default function PackLine() {
     console.log("Headcount ",valuesArray)
     
     const newTotalHeadCount = valuesArray.reduce((acc,val) => acc + val.size,0)
-    console.log("newTotalHeadCount ",newTotalHeadCount)
 
-    updateTotalHeadCount(newTotalHeadCount)
+    useEffect(() => {
+      updateTotalHeadCount(newTotalHeadCount)
+
+    }, [newTotalHeadCount])
+    
 
   return (
     <>
@@ -46,10 +49,10 @@ export default function PackLine() {
         {
           Object.values(posteMapping[ligne]).map(poste => {
             return (
-            <div className='flex flex-row shrink items-center bg-violet-400 p-1 m-1 justify-between rounded rounded-md' key={"L1" + "-" + poste}>
+            <div className='flex flex-row shrink items-center bg-violet-400 p-1 m-1 justify-between rounded-md' key={"L1" + "-" + poste}>
               <div className='flex flex-row w-full items-center'>
 
-                <span className='p-1 m-1 bg-lime-400'>{poste}</span>
+                <span className='p-1 m-1 bg-lime-400'>{String(poste)}</span>
                 <div className='flex flex-row'>
 
                 <AssociateInput poste={poste} />

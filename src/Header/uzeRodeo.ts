@@ -1,14 +1,15 @@
 import { create } from 'zustand'
-import {GM_xmlhttpRequest} from '$'
-import {GM} from '$'
+// @ts-ignore TS don't recognize scriptmonkey quick
+import {GM,GM_xmlhttpRequest} from '$'
 import csv from 'csvtojson'
-import TESTING from '../rodeolocal/rodeo'
+
+type BuildJSON =  Object[]
 
 interface uzeRodeo {
-  data : null;
-  arrayData : null;
-  dataPick : null;
-  dataCapa : null;
+  data : null | BuildJSON;
+  arrayData : null | object[];
+  dataPick : null | [string, Map<string,number>][];
+  dataCapa : null | Map<string,Map<string,number>>;
   refresher: string;
   refresherCapa: string;
   refresherPick: string;
@@ -18,7 +19,7 @@ interface uzeRodeo {
   getRodeoData: () => void;
   getRodeoCapa: () => void;
   getRodeoPickData: () => void;
-  buildJSON : (val : any) => void;
+  buildJSON : (val : any) => BuildJSON;
 }
 
 const urlCSVrodeo = `https://rodeo-dub.amazon.com/MRS1/ItemListCSV?_enabledColumns=on
@@ -71,34 +72,23 @@ updatePickRefresher: (status: string) => {
   get().getRodeoPickData()
 },
   getRodeoCapa: async () => {
-    //console.log("getRodeoCapa starting....")
-
     const stamp = Date.now()
     const rangeStartMillis = String(stamp - 3600000).slice(0,8) +"99999"
     const rangeEndMillis = stamp + (3600000 * 4)
 
-    //console.log("getRodeoCapa stamp ",stamp,{rangeStartMillis},{rangeEndMillis})
-
     const processPath = ["PickingNotYetPicked","PickingPicked"].map(pp => "WorkPool="+pp+"&" )
 
-    
-    
     const promises = await processPath.map(pp => {
       const urlCSVCapaRodeo = decodeURI(`https://rodeo-dub.amazon.com/MRS1/ItemListCSV?_enabledColumns=on&${pp}enabledColumns=ASIN_TITLES&enabledColumns=OUTER_SCANNABLE_ID&ExSDRange.RangeStartMillis=${rangeStartMillis}&ExSDRange.RangeEndMillis=${rangeEndMillis}&Fracs=NON_FRACS&ProcessPath=PPSingleMedium&shipmentType=CUSTOMER_SHIPMENTS`)
-    //console.log("getRodeoCapa url ",pp,urlCSVCapaRodeo)
-    return GM.xmlHttpRequest({method:"GET",url:urlCSVCapaRodeo})
-      .then(resp => csv().fromString(resp.responseText))
-      .then(array => array)
-  })
-
-    //console.log("getRodeoCapa get ",promises)
+      return GM.xmlHttpRequest({method:"GET",url:urlCSVCapaRodeo})
+        .then(resp => csv().fromString(resp.responseText))
+        .then(array => array)
+    })
 
     const [pickingArray,pickedArray] = await Promise.all(promises)
 
-    console.log("getRodeoCapa array",pickingArray,pickedArray)
 
     const mappingCPTpicking = new Map()
-
     pickingArray.forEach(shipment => {
       const cpt = shipment["Expected Ship Date"]
       const quantity = Number(shipment["Quantity"])
@@ -109,14 +99,8 @@ updatePickRefresher: (status: string) => {
       }
     })
 
- 
-    console.log("getRodeoCapa mappingCPTpicking picking", mappingCPTpicking)
-
     const prioTote = new Set(pickedArray.map(row => row["Scannable ID"]))
-    //console.log("getRodeoCapa prioTote",prioTote)
-    
-    console.log("getRodeoCapa get transit data ",get().arrayData)
-
+ 
     const transitArray = get().arrayData
 
     const inTransitTote = new Map()
@@ -128,14 +112,9 @@ updatePickRefresher: (status: string) => {
       inTransitTote.set(tote,existingQuantity + quantiy)
     });
 
-    console.log("getRodeoCapa inTransitTote prio",prioTote)
     prioTote.forEach(tote => inTransitTote.get(tote) && prioTote.delete(tote))
 
-
-    console.log("getRodeoCapa inTransitTote",inTransitTote)
-    console.log("getRodeoCapa inTransitTote new prio",prioTote)
-
-    const prioTotePromise = await [...prioTote].map(tote => {
+    const prioToteDetailPromise = await [...prioTote].map(tote => {
       const urlByTote = `https://rodeo-dub.amazon.com/MRS1/SearchCSV?_enabledColumns=on&enabledColumns=ASIN_TITLES&enabledColumns=OUTER_SCANNABLE_ID&Excel=false&searchKey=${tote}&shipmentType=CUSTOMER_SHIPMENTS`
       const response = GM.xmlHttpRequest({method: "GET",url:urlByTote})
       .then(resp => csv().fromString(resp.responseText))
@@ -144,19 +123,11 @@ updatePickRefresher: (status: string) => {
       return response
     })
 
-    const prioToteFetched = await Promise.all(prioTotePromise)
+    const prioToteDetailFetched = await Promise.all(prioToteDetailPromise)
 
-    //console.log("getRodeoCapa prioToteFetched",prioToteFetched)
+    const mergeToteDetail = [...prioToteDetailFetched,...inTransitTote]
 
-    const mergeToteDetail = [...prioToteFetched,...inTransitTote]
-
-    console.log("getRodeoCapa merdegPrioDetail",mergeToteDetail)
     const mappingCPTpicked = new Map()
-
-    // TESTING replace pickedArray
-
-    const TESTINGarray = await csv().fromString(TESTING)
-
     pickedArray.forEach(shipment => {
       const cpt = shipment["Expected Ship Date"]
       const tote = shipment["Scannable ID"]
@@ -166,41 +137,31 @@ updatePickRefresher: (status: string) => {
       } else {mergeToteDetail.find(bt => bt.tote === tote).shipments && mappingCPTpicked.get(cpt).set(tote,mergeToteDetail.find(bt => bt.tote === tote).shipments)}
     })
 
-  console.log("getRodeoCapa mappingCPTpicked ",mappingCPTpicked)
 
-    // Adding Picking
-  
-  const mergedArray = new Map()
+  const mergedPickingAndPickedArray = new Map()
 
+  // @ts-expect-error don't recognize MapIterator
   mappingCPTpicking.entries().forEach(CPT => {
     const [cpt,listValue] = CPT
-    //console.log("getRodeoCapa CPT",CPT)
-
-    if (mergedArray.get(cpt)) {
-      mergedArray.set(cpt,new Map([...mergedArray.get(cpt),...listValue]))
+    if (mergedPickingAndPickedArray.get(cpt)) {
+      mergedPickingAndPickedArray.set(cpt,new Map([...mergedPickingAndPickedArray.get(cpt),...listValue]))
       } else {
-        mergedArray.set(cpt,new Map(listValue))
+        mergedPickingAndPickedArray.set(cpt,new Map(listValue))
       }
-
-  })
-
-  console.log("getRodeoCapa mappingCPTpicking picking mergedArray", mergedArray)
-
+  })  
+  
+  // @ts-expect-error don't recognize MapIterator
   mappingCPTpicked.entries().forEach(CPT => {
     const [cpt,listValue] = CPT
-    //console.log("getRodeoCapa CPT",CPT)
-
     if (mappingCPTpicked.get(cpt)) {
-      mergedArray.set(cpt,new Map([...mappingCPTpicked.get(cpt),...listValue]))
+      mergedPickingAndPickedArray.set(cpt,new Map([...mappingCPTpicked.get(cpt),...listValue]))
       } else {
-        mergedArray.set(cpt,new Map(listValue))
+        mergedPickingAndPickedArray.set(cpt,new Map(listValue))
       }
 
   })
 
-  console.log("getRodeoCapa mapping mergedArray",mergedArray)
-    
-    set({dataCapa:mergedArray,refresherCapa:"done"})
+    set({dataCapa:mergedPickingAndPickedArray,refresherCapa:"done"})
 
     return 
   },
@@ -224,27 +185,13 @@ updatePickRefresher: (status: string) => {
   })},
   getRodeoPickData: async () => {
 
-    //console.log("refresher is : ",get().refresherPick)
-
     if (get().refresherPick === "done") return
-
-    //console.log("getting data")
 
     const response = await GM.xmlHttpRequest({
     method: "GET",
     url: urlCSVPickSummary,
     })
-  
-    //console.log("Rodeo respond",response,response.responseText)
-    // Using csvtojson library to jsonnify the csv
-    /*
-    const converter = await csv().fromString(response.responseText).then((csvRow) => {
-    set({refresherPick: "done"})
-    const jsonPick = get().buildJSON(csvRow)
 
-    set({dataPick: jsonPick})
-    })
-*/
     const CPTMap = new Map()
 
     const alternateConvert = await csv().fromString(response.responseText)
@@ -255,44 +202,37 @@ updatePickRefresher: (status: string) => {
         const unitWorpPool = row["Work Pool"]
 
         const allowedWorkPool = ["PickingNotYetPicked"]
-        //console.log(row,unitExpectShipDate,unitQuantity,unitPP)
-
         if (isNaN(unitQuantity) || unitPP !== "PPSingleMedium" || !allowedWorkPool.includes(unitWorpPool)) return
-        //console.log(row,unitExpectShipDate,unitQuantity,unitPP)
         CPTMap.has(unitExpectShipDate) ? CPTMap.set(unitExpectShipDate, CPTMap.get(unitExpectShipDate) + unitQuantity) : CPTMap.set(unitExpectShipDate,unitQuantity)
-        //console.log("Rodeo alternateConvert add new entrie ",CPTMap)
-      })
-  
-      set({refresherPick: "done"})
-      
-      const CPTArray = [...CPTMap].sort()
-      console.log("Rodeo alternateConvert result",CPTArray)
-      set({dataPick: CPTArray})
+    })
+
+    set({refresherPick: "done"})
+    
+    const CPTArray = [...CPTMap].sort()
+    console.log("Rodeo alternateConvert result",CPTArray)
+    set({dataPick: CPTArray})
 
     
 
 },
   buildJSON: (csvRow) => {
+    // @ts-ignore TS don't recognize groupBy
       const csvGroupByDZ = Object.groupBy(csvRow, (row) => row["Outer Scannable ID"])
-      // Making object 
       Object.entries(csvGroupByDZ).forEach((entries) => {
         const [key,val] = entries
+        // @ts-ignore TS don't recognize groupBy
+
         const subGroup = Object.groupBy(val,(row) => row["Scannable ID"])
         csvGroupByDZ[key] = subGroup
         Object.entries(csvGroupByDZ[key]).forEach((entries) => {
           const [keyz,value] = entries
+          // @ts-ignore TS don't recognize groupBy
+
           const zubGroup = Object.groupBy(value,(row) => row["Expected Ship Date"])
           csvGroupByDZ[key][keyz] = zubGroup
-          const zubReduce = Object.entries(csvGroupByDZ[key][keyz]).forEach(entries => {
-          const [keyzz,values] = entries
-          csvGroupByDZ[key][keyz][keyzz] = values.reduce((acc,val) => {
-            return Number(acc) + Number(val["Quantity"])},0)
-
-          })
         })
       })
       
-      console.log("New Rodeo data :",csvGroupByDZ)
       return csvGroupByDZ
   }
 }))

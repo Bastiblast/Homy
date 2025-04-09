@@ -1,18 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { RefObject, useEffect, useRef, useState } from 'react'
 import { uzeStore } from '../store/uzeStore'
 
 export default function CapaTable(data) {
     
-    const UPHRef = useRef(null)
-    const timeBeforeFinishRef = useRef(null)
-    const heandcountRef = useRef(null)
+    const UPHRef = useRef<HTMLInputElement>(null)
+    const timeBeforeFinishRef = useRef<HTMLInputElement>(null)
+    const headcountRef = useRef<HTMLInputElement>(null)
 
     const totalHeadCount = uzeStore(s => s.totalHeadCount)
     const noPackerWarning = totalHeadCount === 0 && <span className='col-span-full'>Indiquer un nombre de pack pour calculer la capacité.</span>
 
     const [UPH,setUPH] = useState(145)
     const [timeBeforeFinish,setTimeBeforeFinish] = useState(45)
-    const [customHC,setCustomHC] = useState(totalHeadCount)
+    const [customHC,setCustomHC] = useState<null | number>(totalHeadCount)
 
     useEffect(() => {
         setCustomHC(totalHeadCount)
@@ -59,30 +59,26 @@ export default function CapaTable(data) {
         const packerNeeded = Math.round(Number(unitNumber)/UPH/(deadLineTime/60))
         console.log("CapaTable headers ",header)
 
-        const risk = () =>  {
-
+        const riskStyle = () =>  {
+            const color = {
+                "": "",
+                danger: "bg-red-500",
+                high: "bg-amber-500",
+                medium: "bg-amber-300",
+                carefull: "bg-amber-100",
+                peace: "bg-lime-300",
+            }
+            if (!customHC) return color[""]
             const percentRisk = customHC / packerNeeded
             console.log("CapaTable risk calculating ",percentRisk)
-            if (percentRisk < 0.5) return "danger" 
-            if (percentRisk < 0.75) return "high" 
-            if (percentRisk < 0.90) return "medium" 
-            if (percentRisk < 1.1) return "carefull" 
-            return "peace" 
-            console.log("CapaTable risk nothing return")
+            if (percentRisk < 0.5) return color["danger"]
+            if (percentRisk < 0.75) return color["high"]
+            if (percentRisk < 0.90) return color["medium"]
+            if (percentRisk < 1.1) return color["carefull"]
+            return color["peace"] 
         }
-
-        console.log("CapaTable risk",risk())
         
-        const color = {
-            danger: "bg-red-500",
-            high: "bg-amber-500",
-            medium: "bg-amber-300",
-            carefull: "bg-amber-100",
-            peace: "bg-lime-300",
-        }
-        console.log("CapaTable color",color[risk()])
-        
-        const colorRisk = color[risk()]
+        const colorRisk = riskStyle()
 
             return <>
 
@@ -112,22 +108,23 @@ export default function CapaTable(data) {
             {capaTable(UPH,timeBeforeFinish)}
            
            {noDataWarning || noPackerWarning}
+           
         </div>
 
         <div className='grid grid-flow-row grid-cols-2  border-4 px-2 border-violet-100 bg-white h-full'>
 
-                <span className='flex justify-end items-center pr-3'>headcount</span><input defaultValue={customHC} ref={heandcountRef} 
-                onChange={(e) => setCustomHC(e.target.value)}
+                <span className='flex justify-end items-center pr-3'>headcount</span><input defaultValue={String(customHC)} ref={headcountRef} 
+                onChange={(e) => setCustomHC(Number(e.target.value))}
                 type="number"className='my-auto input input-xs border-blue-400 m-1' />
 
                 <div className='flex justify-end items-center pr-3'>UPH</div>
                 <input defaultValue={UPH} ref={UPHRef} type="number" 
-                onChange={(e) => setUPH(e.target.value)}
+                onChange={(e) => setUPH(Number(e.target.value))}
                 className='my-auto input input-xs border-blue-400 m-1'/>
 
                 <div className='text-end flex items-center  justify-end pr-3'>Temps avant CPT</div>
                 <input defaultValue={timeBeforeFinish} ref={timeBeforeFinishRef} 
-                onChange={(e) => setTimeBeforeFinish(e.target.value)}
+                onChange={(e) => setTimeBeforeFinish(Number(e.target.value))}
                 type="number"className='my-auto input input-xs border-blue-400 m-1'/>
 
         </div>
