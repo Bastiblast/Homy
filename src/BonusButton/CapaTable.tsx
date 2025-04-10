@@ -114,8 +114,9 @@ export default function CapaTable(data) {
 
         const header = cpt.substring(11,16)
 
-        const packerNeeded = deadLineTime === 0 ? "Finish" : String(Math.ceil(Number(allUnitNumber)/UPH/(deadLineTime/60))+" pack")
-        //console.log("CapaTable headers ",header)
+        const packCalculation = Math.ceil(Number(allUnitNumber)/UPH/(deadLineTime/60))
+        const packerNeeded = deadLineTime === 0 ? "Finish" : (String(packCalculation) + " pack")
+        console.log("CapaTable headers ",header)
 
         const riskStyle = () =>  {
             const color = {
@@ -127,8 +128,10 @@ export default function CapaTable(data) {
                 peace: "bg-lime-300",
             }
             if (!customHC) return color[""]
-            const percentRisk = customHC / packerNeeded
-            //console.log("CapaTable risk calculating ",percentRisk)
+            console.log("CapaTable risk calculating ",customHC,packerNeeded)
+
+            const percentRisk = customHC / packCalculation
+            console.log("CapaTable risk calculating ",percentRisk)
             if (percentRisk < 0.5) return color["danger"]
             if (percentRisk < 0.75) return color["high"]
             if (percentRisk < 0.90) return color["medium"]
@@ -140,11 +143,11 @@ export default function CapaTable(data) {
 
             return <>
 
-                    <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{header}</div>
-                    <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{btNumber}{index > 0 && "-"+allBtNumber}</div>
-                    <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{unitNumber}{index > 0 && "-"+allUnitNumber}</div>
-                    <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{deadLineTime}min</div>
-                    <div className={'border-b-2 justify-center flex items-center '+colorRisk}>{packerNeeded}</div>
+                    <div key={index} className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{header}</div>
+                    <div key={index +1} className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{btNumber}{index > 0 && "-"+allBtNumber}</div>
+                    <div key={index+2} className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{unitNumber}{index > 0 && "-"+allUnitNumber}</div>
+                    <div key={index+3} className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{deadLineTime}min</div>
+                    <div key={index+4} className={'border-b-2 justify-center flex items-center '+colorRisk}>{packerNeeded}</div>
             
 
             </>
