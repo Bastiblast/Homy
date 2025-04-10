@@ -1,6 +1,6 @@
 import React, { RefObject, useEffect, useRef, useState } from 'react'
 import { uzeStore } from '../store/uzeStore'
-import {GM_getValue} from '$'
+import {GM_getValue,GM_deleteValue,GM} from '$'
 
 export default function CapaTable(data) {
     
@@ -10,17 +10,36 @@ export default function CapaTable(data) {
 
     const totalHeadCount = uzeStore(s => s.totalHeadCount)
     
-    const [UPH,setUPH] = useState(null)
-    const [timeBeforeFinish,setTimeBeforeFinish] = useState(null)
+    const [UPH,setUPH] = useState<null | number>(null)
+    const [timeBeforeFinish,setTimeBeforeFinish] = useState<null | number>(null)
 
     const [customHC,setCustomHC] = useState<null | number>(totalHeadCount)
     
     const updateCapacityDetails = uzeStore(s => s.updateCapacityDetails)
 
+    const procced = useRef(new Map())
+    
     useEffect(() => {
-      const info = JSON.parse(GM_getValue("Homy_capacityDetails"))
-      setUPH(isNaN(info.userPreference.UPH) || !info.userPreference.UPH  ? 145 : info.userPreference.UPH )
-      setTimeBeforeFinish(isNaN(info.userPreference.TBCPT) || !info.userPreference.TBCPT ? 45 : info.userPreference.TBCPT )
+    
+    }, [])
+    
+    useEffect(() => {
+        
+        console.log("Trying cache user preference....")
+        GM.getValue("Homy_capacityDetails")
+        .then(GMValue => {
+            if (!GMValue || GMValue == undefined) {
+                setUPH(145)
+                setTimeBeforeFinish(45)
+            } else {
+
+            console.log('GM_getValue("Homy_capacityDetails")',GMValue)
+            const info = GMValue ? JSON.parse(GMValue) : null
+            setUPH(isNaN(info.userPreference.UPH) || !info.userPreference.UPH  ? 145 : info.userPreference.UPH )
+            setTimeBeforeFinish(isNaN(info.userPreference.TBCPT) || !info.userPreference.TBCPT ? 45 : info.userPreference.TBCPT )
+            }
+        })
+        
     }, [])
     
     
@@ -45,36 +64,35 @@ export default function CapaTable(data) {
     
     const noPackerWarning = customHC === 0 && <span className='col-span-full'>Indiquer un nombre de pack pour calculer la capacité.</span>
 
-    console.log("CapaTable HC ",totalHeadCount,"custom",customHC)
+    //console.log("CapaTable HC ",totalHeadCount,"custom",customHC)
 
     const dataObject = data.data
-    console.log("CapaTable data ",dataObject)
-    if (!dataObject) return
-    const noDataWarning = dataObject.size === 0 && <span className='col-span-full'>Il n'y a pas de CPT dans les 4 prochaines heures.</span>
+    //console.log("CapaTable data ",dataObject)
 
     if (!dataObject) return
-//    const array = await (await csv().fromString(responseText)).sort((a,b) => Date.parse(a["Expected Ship Date"]) - Date.parse(b["Expected Ship Date"]))
+
+    const noDataWarning = dataObject.size === 0 && <span className='col-span-full'>Il n'y a pas de CPT dans les 4 prochaines heures.</span>
+
 
     const mapToArray = [...dataObject.entries()].sort()
 
-    console.log("CapaTable array ",mapToArray)
+    //console.log("CapaTable array ",mapToArray)
 
-    let procced
 
     const capaTable = (UPH,timeBeforeFinish) => mapToArray.map((CPT,index) => {
 
         
-        console.log("CapaTable CPT ",CPT)
+        //console.log("CapaTable CPT ",CPT)
 
         if (!UPH || !timeBeforeFinish) return 
 
         const [cpt,listValue] = CPT
 
         
-        procced = index !== 0 ? new Map([...listValue,...procced]) : listValue
+        procced.current = index !== 0 ? new Map([...listValue,...procced.current]) : listValue
 
-        console.log("CapaTable listValue ", listValue)
-        console.log("CapaTable procced ", procced)
+        //console.log("CapaTable listValue ", listValue)
+        //console.log("CapaTable procced.current ", procced.current)
 
         const dateCPT = Date.parse(cpt)
 
@@ -85,19 +103,19 @@ export default function CapaTable(data) {
         const deadLineTime = remainingTime - timeBeforeFinish > 0 ? remainingTime - timeBeforeFinish : 0
 
         const btNumber = listValue.size
-        const allBtNumber = procced.size
+        const allBtNumber = procced.current.size
 
         const unitNumber = btNumber > 1 ? [...listValue].reduce((acc,val) => {
             return acc + val[1]
         },0) : [...listValue][0][1]
-        const allUnitNumber = allBtNumber > 1 ? [...procced].reduce((acc,val) => {
+        const allUnitNumber = allBtNumber > 1 ? [...procced.current].reduce((acc,val) => {
             return acc + val[1]
-        },0) : [...procced][0][1]
+        },0) : [...procced.current][0][1]
 
         const header = cpt.substring(11,16)
 
-        const packerNeeded = deadLineTime === 0 ? "Finish" : String(Math.round(Number(allUnitNumber)/UPH/(deadLineTime/60))+" pack")
-        console.log("CapaTable headers ",header)
+        const packerNeeded = deadLineTime === 0 ? "Finish" : String(Math.ceil(Number(allUnitNumber)/UPH/(deadLineTime/60))+" pack")
+        //console.log("CapaTable headers ",header)
 
         const riskStyle = () =>  {
             const color = {
@@ -110,7 +128,7 @@ export default function CapaTable(data) {
             }
             if (!customHC) return color[""]
             const percentRisk = customHC / packerNeeded
-            console.log("CapaTable risk calculating ",percentRisk)
+            //console.log("CapaTable risk calculating ",percentRisk)
             if (percentRisk < 0.5) return color["danger"]
             if (percentRisk < 0.75) return color["high"]
             if (percentRisk < 0.90) return color["medium"]
@@ -123,8 +141,8 @@ export default function CapaTable(data) {
             return <>
 
                     <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{header}</div>
-                    <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{btNumber}-{allBtNumber}</div>
-                    <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{unitNumber}-{allUnitNumber}</div>
+                    <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{btNumber}{index > 0 && "-"+allBtNumber}</div>
+                    <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{unitNumber}{index > 0 && "-"+allUnitNumber}</div>
                     <div className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{deadLineTime}min</div>
                     <div className={'border-b-2 justify-center flex items-center '+colorRisk}>{packerNeeded}</div>
             
@@ -132,6 +150,9 @@ export default function CapaTable(data) {
             </>
     })
 
+    const emptyInputColor = {
+        0: "bg-red-300"
+    } 
 
   return (
     <div className='flex flex-row h-full w-full items-center bg-violet-100'>
@@ -144,7 +165,7 @@ export default function CapaTable(data) {
                 <div className='flex justify-between'>
 
                 <span className='text-xs'>Prio</span>
-                <span className='text-xs'>All</span>
+                <span className='text-xs'>Sum</span>
                 </div>
                 
             </div>
@@ -153,7 +174,7 @@ export default function CapaTable(data) {
                 <div className='flex justify-between'>
 
                 <span className='text-xs'>Prio</span>
-                <span className='text-xs'>All</span>
+                <span className='text-xs'>Sum</span>
                 </div>
                 
             </div>
@@ -161,7 +182,7 @@ export default function CapaTable(data) {
             <div className='text-center px-4 font-bold border-b-2 h-8'>Attendu</div>
         
 
-            {capaTable(UPH,timeBeforeFinish)}
+            {dataObject.size > 0 && capaTable(UPH,timeBeforeFinish)}
            
            {noDataWarning || noPackerWarning}
            
@@ -169,19 +190,20 @@ export default function CapaTable(data) {
 
         <div className='grid grid-flow-row grid-cols-2  border-4 px-2 border-violet-100 bg-white h-full'>
 
-                <span className='flex justify-end items-center pr-3'>headcount</span><input defaultValue={String(customHC)} ref={headcountRef} 
+                <span className={`flex justify-end items-center pr-3`}>headcount</span>
+                <input defaultValue={String(customHC)} ref={headcountRef} 
                 onChange={(e) => setCustomHC(Number(e.target.value))}
-                type="number"className='my-auto input input-xs border-blue-400 m-1' />
+                type="number"className={`my-auto input input-xs border-blue-400 m-1 ` + emptyInputColor[customHC]} />
 
-                <div className='flex justify-end items-center pr-3'>UPH</div>
+                <div className={'flex justify-end items-center pr-3'}>UPH</div>
                 <input defaultValue={UPH} ref={UPHRef} type="number" 
                 onChange={(e) => setUPH(Number(e.target.value))}
-                className='my-auto input input-xs border-blue-400 m-1'/>
+                className={'my-auto input input-xs border-blue-400 m-1 ' + emptyInputColor[UPH]}/>
 
                 <div className='text-end flex items-center  justify-end pr-3'>Temps avant CPT</div>
                 <input defaultValue={timeBeforeFinish} ref={timeBeforeFinishRef} 
                 onChange={(e) => setTimeBeforeFinish(Number(e.target.value))}
-                type="number"className='my-auto input input-xs border-blue-400 m-1'/>
+                type="number"className={`my-auto input input-xs border-blue-400 m-1 ` + emptyInputColor[timeBeforeFinish]}/>
 
         </div>
 

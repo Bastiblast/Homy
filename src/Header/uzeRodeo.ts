@@ -24,10 +24,7 @@ interface uzeRodeo {
   buildJSON : (val : any) => BuildJSON;
 }
 
-const urlCSVrodeo = `https://rodeo-dub.amazon.com/MRS1/ItemListCSV?_enabledColumns=on
-&WorkPool=PickingPickedAtDestination&enabledColumns=ASIN_TITLES&enabledColumns=DEMAND_ID
-&enabledColumns=OUTER_SCANNABLE_ID&enabledColumns=SORT_CODE&Excel=false
-&Fracs=NON_FRACS&ProcessPath=PPSingleMedium&shipmentType=CUSTOMER_SHIPMENTS`
+const urlCSVrodeo = `https://rodeo-dub.amazon.com/MRS1/ItemListCSV?_enabledColumns=on&WorkPool=PickingPickedAtDestination&enabledColumns=ASIN_TITLES&enabledColumns=DEMAND_ID&enabledColumns=OUTER_SCANNABLE_ID&enabledColumns=SORT_CODE&Excel=false&Fracs=NON_FRACS&ProcessPath=PPSingleMedium&shipmentType=CUSTOMER_SHIPMENTS`
 
 //                  `https://rodeo-dub.amazon.com/MRS1/ItemListCSV?_enabledColumns=on
 // &WorkPool=PickingNotYetPicked&enabledColumns=ASIN_TITLES&enabledColumns=OUTER_SCANNABLE_ID&Excel=false
@@ -60,7 +57,7 @@ export const uzeRodeo = create<uzeRodeo>((set,get)=>({
   dataPickAge: null,
   dataCapa: null,
   dataCapaAge: null,
-  refresher: "done", // modify to loading to load at start
+  refresher: "loading", // modify to loading to load at start
   refresherCapa: "done", // modify to loading to load at start
   refresherPick: "done",
   updateRefresher: (status: string) => {
@@ -84,7 +81,7 @@ updatePickRefresher: (status: string) => {
 
     const promises = await processPath.map(pp => {
       const urlCSVCapaRodeo = decodeURI(`https://rodeo-dub.amazon.com/MRS1/ItemListCSV?_enabledColumns=on&${pp}enabledColumns=ASIN_TITLES&enabledColumns=OUTER_SCANNABLE_ID&ExSDRange.RangeStartMillis=${rangeStartMillis}&ExSDRange.RangeEndMillis=${rangeEndMillis}&Fracs=NON_FRACS&ProcessPath=PPSingleMedium&shipmentType=CUSTOMER_SHIPMENTS`)
-      return GM.xmlHttpRequest({method:"GET",url:urlCSVCapaRodeo})
+      return GM.xmlHttpRequest({method:"GET",url:urlCSVCapaRodeo,overrideMimeType:"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"})
         .then(resp => csv().fromString(resp.responseText))
         .then(array => array)
     })
@@ -92,6 +89,7 @@ updatePickRefresher: (status: string) => {
     const [pickingArray,pickedArray] = await Promise.all(promises)
 
 
+    console.log("getCap response ",promises,pickedArray,pickedArray)
     const mappingCPTpicking = new Map()
     pickingArray.forEach(shipment => {
       const cpt = shipment["Expected Ship Date"]
@@ -129,14 +127,14 @@ updatePickRefresher: (status: string) => {
 
     const prioToteDetailFetched = await Promise.all(prioToteDetailPromise)
 
-    console.log("getRodeoData prioToteDetailFetched",prioToteDetailFetched)
-    console.log("getRodeoData inTransitTote",inTransitTote)
+    //console.log("getRodeoData prioToteDetailFetched",prioToteDetailFetched)
+    //console.log("getRodeoData inTransitTote",inTransitTote)
 
 
 
     const mergeToteDetail = [...prioToteDetailFetched,...[...inTransitTote].map(entries => {return {tote:entries[0],shipments:entries[1]}})]
 
-    console.log("getRodeoData mergeToteDetail",mergeToteDetail)
+    //console.log("getRodeoData mergeToteDetail",mergeToteDetail)
 
     const mappingCPTpicked = new Map()
 
@@ -144,7 +142,7 @@ updatePickRefresher: (status: string) => {
       const cpt = shipment["Expected Ship Date"]
       const tote = shipment["Scannable ID"]
       // add CPT and tote for each
-      console.log("getRodeoData mappingCPTpicker find ",mergeToteDetail.find(bt => bt.tote === tote))
+      //console.log("getRodeoData mappingCPTpicker find ",mergeToteDetail.find(bt => bt.tote === tote))
       if (!mappingCPTpicked.has(cpt) && mergeToteDetail.find(bt => bt.tote === tote)) {
         mergeToteDetail.find(bt => bt.tote === tote) && mappingCPTpicked.set(cpt,new Map().set(tote,mergeToteDetail.find(bt => bt.tote === tote).shipments))
       } else if (mergeToteDetail.find(bt => bt.tote === tote)) {
@@ -157,8 +155,8 @@ updatePickRefresher: (status: string) => {
     console.log("getRodeoData mapping picked",mappingCPTpicked)
   const mergedPickingAndPickedArray = new Map()
 
-  // @ts-expect-error don't recognize MapIterator
-  mappingCPTpicking.entries().forEach(CPT => {
+  const CPTpickingArray = [...mappingCPTpicking]
+  CPTpickingArray.forEach(CPT => {
     const [cpt,listValue] = CPT
     if (mergedPickingAndPickedArray.get(cpt)) {
       mergedPickingAndPickedArray.set(cpt,new Map([...mergedPickingAndPickedArray.get(cpt),...listValue]))
@@ -167,11 +165,10 @@ updatePickRefresher: (status: string) => {
       }
   })  
   
-  console.log("getRodeoData merge + picking",mappingCPTpicked)
+  //console.log("getRodeoData merge + picking",mappingCPTpicked)
 
-
-  // @ts-expect-error don't recognize MapIterator
-  mappingCPTpicked.entries().forEach(CPT => {
+  const CPTpickedArray = [...mappingCPTpicked]
+  CPTpickedArray.forEach(CPT => {
     const [cpt,listValue] = CPT
     if (mergedPickingAndPickedArray.get(cpt)) {
       mergedPickingAndPickedArray.set(cpt,new Map([...mergedPickingAndPickedArray.get(cpt),...listValue]))
@@ -180,10 +177,10 @@ updatePickRefresher: (status: string) => {
       }
 
   })
-  console.log("getRodeoData merge + picked",mappingCPTpicked)
+  //console.log("getRodeoData merge + picked",mappingCPTpicked)
 
 
-  console.log("getRodeoData mergedPickingAndPickedArray ",mergedPickingAndPickedArray)
+  //console.log("getRodeoData mergedPickingAndPickedArray ",mergedPickingAndPickedArray)
 
   set({dataCapa:mergedPickingAndPickedArray,refresherCapa:"done",dataCapaAge:Date.now()})
 
@@ -191,10 +188,12 @@ updatePickRefresher: (status: string) => {
   },
   getRodeoData: () => {
     if (get().refresher === "done") return
+    console.log("urlCSVrodeo ",decodeURI(urlCSVrodeo))
     GM_xmlhttpRequest({
     method: "GET",
-    url: urlCSVrodeo,
+    url: decodeURI(urlCSVrodeo),
     onload: function(response) {
+      console.log("urlCSVrodeo response ",response,response.responseText)
       csv().fromString(response.responseText).then((csvRow) => {
       set({refresher: "done"})
       set({arrayData: csvRow})

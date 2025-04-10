@@ -11,7 +11,5 @@ ReactDOM.createRoot(
     return app;
   })(),
 ).render(
-  <React.StrictMode>
     <App />
-  </React.StrictMode>,
 );

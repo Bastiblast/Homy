@@ -10,6 +10,7 @@ export default defineConfig({
     monkey({
       entry: 'src/main.jsx',
       userscript: {
+        version: "0.2.0",
         author: "bmillion",
         icon: 'https://vitejs.dev/logo.svg',
         namespace: 'npm/vite-plugin-monkey',

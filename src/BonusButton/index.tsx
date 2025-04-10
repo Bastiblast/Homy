@@ -3,6 +3,8 @@ import { uzeStore } from '../store/uzeStore'
 import { uzeRodeo } from '../Header/uzeRodeo'
 import usePick from './usePick'
 import CapaTable from './CapaTable'
+import {GM_deleteValue} from '$'
+
 export default function index() {
     
     const {renderPick} = usePick()
@@ -19,6 +21,8 @@ export default function index() {
 
     const dataPick = uzeRodeo(s => s.dataPick)
     const dataCapa = uzeRodeo(s => s.dataCapa)
+
+    const refresher = uzeRodeo(s => s.refresher)
 
     const isOutDated = (stamp,sec) => {
       if (!stamp || !sec) return  
@@ -52,7 +56,7 @@ export default function index() {
 
     const handleCapa = async () => {
 
-      if (dataCapaAge && isOutDated(dataCapaAge,1800)) {
+      if (dataCapaAge && isOutDated(dataCapaAge,180)) {
         console.log("Capacity data is out dated ? ",isOutDated(dataCapaAge,180))
         updateIBC(<CapaTable data={dataCapa} />)}
       else {
@@ -65,15 +69,19 @@ export default function index() {
     }
 
 
+    const handleDelete = () => {
+      GM_deleteValue("Homy_capacityDetails")
+    }
 
 
 
   return (
     <div className='grid grid-cols-2 grid-rows-3 h-full justify-evenly'>
     <button className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={true}>PLAN</button>
-    <button onClick={handlePDP} className='btn m-1 rounded-none bg-red-400 shadow-md w-16'>PDP</button>
-    <button onClick={handleCapa} className='btn m-1 rounded-none bg-red-400 shadow-md w-16'>CAPA</button>
-    <button onClick={handlePick} className='btn m-1 rounded-none bg-red-400 shadow-md w-16'>PICK</button>
+    <button onClick={handlePDP} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={refresher === "loading" ? true : false}>PDP</button>
+    <button onClick={handleCapa} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={refresher === "loading" ? true : false}>CAPA</button>
+    <button onClick={handlePick} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={refresher === "loading" ? true : false}>PICK</button>
+    <button onClick={handleDelete} className='btn m-1 rounded-none bg-red-400 shadow-md w-16 hidden' disabled={refresher === "loading" ? true : false}>Delete</button>
   </div>
   )
 }
