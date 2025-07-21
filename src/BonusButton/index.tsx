@@ -10,19 +10,19 @@ export default function index() {
     const {renderPick} = usePick()
 
     const updatePDPData = uzeStore(s => s.updatePDPData)
-    const getRodeoPickData = uzeRodeo(s => s.getRodeoPickData)  
+    const getRodeoPickData = uzeStore(s => s.getRodeoPickData)  
 
-    const updatePickRefresher = uzeRodeo(s => s.updatePickRefresher)
-    const getRodeoCapa = uzeRodeo(s => s.getRodeoCapa)    
-    const dataCapaAge = uzeRodeo(s => s.dataCapaAge)
+    const updatePickRefresher = uzeStore(s => s.updatePickRefresher)
+    const getRodeoCapa = uzeStore(s => s.getRodeoCapa)    
+    const dataCapaAge = uzeStore(s => s.dataCapaAge)
 
-    const updateCapaRefresher = uzeRodeo(s => s.updateCapaRefresher)
+    const updateCapaRefresher = uzeStore(s => s.updateCapaRefresher)
     const updateIBC = uzeStore(s => s.updateIBC)
 
-    const dataPick = uzeRodeo(s => s.dataPick)
-    const dataCapa = uzeRodeo(s => s.dataCapa)
+    const dataPick = uzeStore(s => s.dataPick)
+    const dataCapa = uzeStore(s => s.dataCapa)
 
-    const refresher = uzeRodeo(s => s.refresher)
+    const refresher = uzeStore(s => s.refresher)
 
     const isOutDated = (stamp,sec) => {
       if (!stamp || !sec) return  

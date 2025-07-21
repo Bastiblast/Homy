@@ -11,7 +11,7 @@ export default function PackLine() {
 
     const posteMapping = uzeStore(s => s.singleLaneMapping)
     
-    const getRodeoData = uzeRodeo(s => s.getRodeoData)
+    const getRodeoData = uzeStore(s => s.getRodeoData)
 
     useEffect(() => {
       getRodeoData()

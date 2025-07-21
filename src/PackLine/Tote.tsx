@@ -5,7 +5,7 @@ import { uzeStore } from '../store/uzeStore'
 
 export default function RenderPoste({dropzone,day,infoBoxRef}) {
     
-    const data = uzeRodeo(s => s.data)
+    const data = uzeStore(s => s.data)
     const CPTlist = uzeCPTSelection(s => s.CPTlist)
     const updateIBC = uzeStore(s => s.updateIBC)
 
@@ -49,7 +49,7 @@ export default function RenderPoste({dropzone,day,infoBoxRef}) {
      }
 
    return (
-   <div onClick={() => handleToteLook(totes,data[dropzone][totes])} className={activeTote + ' m-1 p-1 rounded'} key={totes}>{totes.substring(8,11)}
+   <div onClick={() => handleToteLook(totes,data[dropzone][totes])} className={activeTote + ' m-1 p-1 transition-all rounded hover:scale-[2] hover:font-bold'} key={totes}>{totes.substring(8,11)}
               
    </div>)
  })

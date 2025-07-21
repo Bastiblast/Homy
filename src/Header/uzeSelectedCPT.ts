@@ -13,6 +13,7 @@ export const uzeCPTSelection = create<CPTSelection>((set,get)=>({
     let newArray
     const clickElement = event.target as HTMLButtonElement
     const clickContent: string = clickElement.textContent || ""
+    console.log("updateCPTTracking",clickContent)
     if (actualList.includes(clickContent)){
         newArray = actualList.filter(val => val !== clickContent)
     } else {

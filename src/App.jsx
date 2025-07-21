@@ -1,15 +1,14 @@
 import PackLine from './PackLine/index';
 import MultiSelectorBtn from './Header/MultiSelectorBtn';
 import DaySelector from './Header/DaySelector';
-import { uzeRodeo } from './Header/uzeRodeo';
+import { uzeStore } from './store/uzeStore';
 import InfoBox from './PackLine/InfoBox';
 import TotalHeadCount from './PackLine/TotalHeadCount';
 import BonusButton from './BonusButton/index'
 
-
 function App() {
-  const updateRefresher = uzeRodeo(s => s.updateRefresher)
-  const refresher = uzeRodeo(s => s.refresher)
+  const updateRefresher = uzeStore(s => s.updateRefresher)
+  const refresher = uzeStore(s => s.refresher)
 
 const refreshHandle = () => {
   updateRefresher("loading")
