@@ -29,8 +29,8 @@ export default function Buffer({dz}) {
       const isPrio = CPTlist.length > 0
       const bufferName = dz === "dz-P-OB-Single-CartRunMove" ? "CartRunMove" : "Buffer"
       return <>
-      <span className={'mx-2 px-2 font-bold bg-blue-500'}>{bufferName}: {toteNumber.length + " BT"}</span>
-      {isPrio && <span className={'mx-2 px-2 font-bold bg-red-500'}>Prio : {prioToteNumber + " BT"}</span>}
+      <span className={'mx-2 px-2 font-bold transition-all rounded-md hover:scale-[2] hover:font-bold bg-blue-500'}>{bufferName}: {toteNumber.length + " BT"}</span>
+      {isPrio && <span className={'mx-2 px-2 font-bold transition-all rounded-md hover:scale-[2] hover:font-bold bg-red-500'}>Prio : {prioToteNumber + " BT"}</span>}
       </>
     }
     

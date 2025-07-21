@@ -64,10 +64,7 @@ export default function CapaTable(data) {
     
     const noPackerWarning = customHC === 0 && <span className='col-span-full'>Indiquer un nombre de pack pour calculer la capacité.</span>
 
-    //console.log("CapaTable HC ",totalHeadCount,"custom",customHC)
-
     const dataObject = data.data
-    //console.log("CapaTable data ",dataObject)
 
     if (!dataObject) return
 
@@ -91,9 +88,6 @@ export default function CapaTable(data) {
         
         procced.current = index !== 0 ? new Map([...listValue,...procced.current]) : listValue
 
-        //console.log("CapaTable listValue ", listValue)
-        //console.log("CapaTable procced.current ", procced.current)
-
         const dateCPT = Date.parse(cpt)
 
         const dateAct = Date.now()
@@ -106,9 +100,12 @@ export default function CapaTable(data) {
         const allBtNumber = procced.current.size
 
         const unitNumber = btNumber > 1 ? [...listValue].reduce((acc,val) => {
+            console.log("unitNumber val",val)
             return acc + val[1]
         },0) : [...listValue][0][1]
         const allUnitNumber = allBtNumber > 1 ? [...procced.current].reduce((acc,val) => {
+            console.log("allunitNumber val",val)
+
             return acc + val[1]
         },0) : [...procced.current][0][1]
 

@@ -5,14 +5,29 @@ import { uzeStore } from './store/uzeStore';
 import InfoBox from './PackLine/InfoBox';
 import TotalHeadCount from './PackLine/TotalHeadCount';
 import BonusButton from './BonusButton/index'
-
+import { useEffect } from 'react';
+import {GM_getValue,GM_setValue} from '$';
 function App() {
   const updateRefresher = uzeStore(s => s.updateRefresher)
   const refresher = uzeStore(s => s.refresher)
+  const updateCapacityDetails = uzeStore(s => s.updateCapacityDetails)
 
 const refreshHandle = () => {
   updateRefresher("loading")
 }
+
+useEffect(() => {
+  const storedValue = GM_getValue("Homy_capacityDetails")
+  const initValue = storedValue ? JSON.parse(storedValue) : {
+  dataTime: 0,
+  userPreference: {
+    UPH: 145,
+    TBCPT: 45,
+  }
+
+}
+  updateCapacityDetails(initValue)
+})
 
   return (
     <div className="App h-full bg-gradient-to-b from-white to-violet-500">

@@ -5,6 +5,7 @@ import {GM,GM_xmlhttpRequest,GM_setValue} from '$'
 import ShiftPaternSelector from '../BonusButton/ShiftPaternSelector';
 import {staticPDPDatas} from '../packSinglePDP'
 import {staticRodeoDatas} from '../shipmentItemList'
+import {staticPickDatas} from '../pickSumList'
 import csv from 'csvtojson'
 
 const urlCSVrodeo = `https://rodeo-dub.amazon.com/MRS1/ItemListCSV?_enabledColumns=on&WorkPool=PickingPickedAtDestination&enabledColumns=ASIN_TITLES&enabledColumns=DEMAND_ID&enabledColumns=OUTER_SCANNABLE_ID&enabledColumns=SORT_CODE&Excel=false&Fracs=NON_FRACS&ProcessPath=PPSingleMedium&shipmentType=CUSTOMER_SHIPMENTS`
@@ -71,6 +72,8 @@ interface Store {
   updatePDPFilteredData : (newData) => void;
     environnement: 'developpement' | 'production',
   data : null | BuildJSON;
+  dataTotal: null | BuildJSON;
+    updateDataTotal: (newData: BuildJSON) => void ;
   arrayData : null | object[];
   dataPick : null | [string, Map<string,number>][];
   dataCapa : null | Map<string,Map<string,number>>;
@@ -93,7 +96,7 @@ const PDPurl = "https://share.amazon.com/sites/MRS1-PDP/Documents%20partages/MRS
 
 export const uzeStore = create<Store>(
   (set,get)=>({
-  environnement: 'developpement',
+  environnement: 'production',
   singleLaneMapping : {
     Ligne1: [107,108,109,110,111,112,113,114,115,116,117],
     Ligne2: [209,210,211,212,213,214,215,216],
@@ -167,6 +170,10 @@ export const uzeStore = create<Store>(
   
 
   data: null,
+  dataTotal: null,
+  updateDataTotal: (newData: BuildJSON) => {
+    set({dataTotal: newData})
+  } ,
   arrayData: null,
   dataPick: null,
   dataPickAge: null,
@@ -295,7 +302,7 @@ updatePickRefresher: (status: string) => {
   //console.log("getRodeoData merge + picked",mappingCPTpicked)
 
 
-  //console.log("getRodeoData mergedPickingAndPickedArray ",mergedPickingAndPickedArray)
+  console.log("getRodeoData mergedPickingAndPickedArray ",mergedPickingAndPickedArray)
 
   set({dataCapa:mergedPickingAndPickedArray,refresherCapa:"done",dataCapaAge:Date.now()})
 
@@ -335,14 +342,26 @@ updatePickRefresher: (status: string) => {
 
     if (get().refresherPick === "done") return
 
-    const response = await GM.xmlHttpRequest({
+    let response
+    switch (get().environnement) {
+      case 'developpement': 
+      response = staticPickDatas
+      break
+      case 'production':
+    response = await GM.xmlHttpRequest({
     method: "GET",
     url: urlCSVPickSummary,
     })
+    response = response.responseText
+      break
+    }
+
 
     const CPTMap = new Map()
 
-    const alternateConvert = await csv().fromString(response.responseText)
+    console.log("pickData response",response)
+
+    const alternateConvert = await csv().fromString(response)
     alternateConvert.forEach(row => {
         const unitExpectShipDate = row["ExSD"]
         const unitQuantity = Number(row["Quantity"])

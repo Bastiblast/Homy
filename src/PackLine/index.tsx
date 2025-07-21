@@ -13,6 +13,9 @@ export default function PackLine() {
     
     const getRodeoData = uzeStore(s => s.getRodeoData)
 
+    const dataTotal = uzeStore(s => s.dataTotal)
+  const capacityDetails = uzeStore(s => s.capacityDetails)
+
     useEffect(() => {
       getRodeoData()
     }, [])
@@ -49,8 +52,29 @@ export default function PackLine() {
           </div>
         {
           Object.values(posteMapping[ligne]).map(poste => {
+
+            let renderUnits, railUnit, wsUnit,stationUnits,stationCPT,wsCPT,nextCPT,remaingTime,timeToFinish,stationColor,potentiel
+            if (dataTotal) {
+              railUnit = dataTotal[`dz-P-OB-Single-cvg-${poste}`]?.total
+              wsUnit = dataTotal[`ws_Singles_0${poste}`]?.total
+              stationUnits = railUnit && wsUnit ? railUnit + wsUnit : railUnit ? railUnit : wsUnit
+              console.log(poste,stationUnits,{railUnit},{wsUnit})
+              renderUnits = isNaN(stationUnits) ? null : stationUnits
+              
+              wsCPT = dataTotal[`ws_Singles_0${poste}`]?.NextCPT
+              stationCPT = dataTotal[`dz-P-OB-Single-cvg-${poste}`]?.NextCPT
+              nextCPT = wsCPT < stationCPT ? wsCPT : stationCPT
+              remaingTime = ((Date.parse(nextCPT) - Date.now()) / 1000 / 60 /60 )
+
+              timeToFinish = renderUnits / capacityDetails?.userPreference.UPH
+              potentiel = (remaingTime - (timeToFinish + (capacityDetails?.userPreference.TBCPT/60)))
+              stationColor = potentiel > 0 || isNaN(potentiel) ? 'flex flex-row shrink items-center bg-violet-400 p-1 m-1 justify-between rounded-md' :
+              'flex flex-row shrink items-center bg-red-400 p-1 m-1 justify-between rounded-md'
+
+            }
+
             return (
-              <div className='flex flex-row shrink items-center bg-violet-400 p-1 m-1 justify-between rounded-md' key={"L1" + "-" + poste}>
+              <div className={stationColor} key={"L1" + "-" + poste}>
               <div className='flex flex-row w-full items-center'>
 
                 <span className='p-2 bg-lime-400 rounded-md'>{String(poste)}</span>
@@ -61,13 +85,18 @@ export default function PackLine() {
                 
                 <div className='flex flex-row'>
 
-                  <RenderTote dropzone={"ws_Singles_0" + poste} day={day} infoBoxRef={infoBoxRef}/>
+                  <RenderTote inductPrio={{prioCPT:nextCPT,potentiel}} dropzone={"ws_Singles_0" + poste} day={day} infoBoxRef={infoBoxRef}/>
                   <div className="divider divider-horizontal p-0 mx-0"></div>
-                  <RenderTote dropzone={"dz-P-OB-Single-cvg-" + poste} day={day} infoBoxRef={infoBoxRef}/>
+                  <RenderTote inductPrio={{prioCPT:nextCPT,potentiel}} dropzone={"dz-P-OB-Single-cvg-" + poste} day={day} infoBoxRef={infoBoxRef}/>
 
                 </div>
-              </div>            
-            </div>)
+              </div>
+              <div className='w-12'>
+              {renderUnits && renderUnits}/u {timeToFinish && (timeToFinish * 60).toFixed(0)}/m            
+
+              </div>
+            </div>
+            )
           })
           
         }</div>)
