@@ -1,7 +1,7 @@
 import { uzeCPTSelection } from '../Header/uzeSelectedCPT'
 import { uzeStore } from '../store/uzeStore'
 
-export default function RenderPoste({dropzone,day,infoBoxRef,inductPrio}) {
+export default function RenderPoste({dropzone,inductPrio}) {
     
     const data = uzeStore(s => s.data)
     const updateDataTotal = uzeStore(s => s.updateDataTotal)
@@ -19,23 +19,23 @@ export default function RenderPoste({dropzone,day,infoBoxRef,inductPrio}) {
     if (totes === 'total' || totes === 'NextCPT') return
     //console.log("data",dropzone,totes,data[dropzone][totes],data)
 
-    let newTotalQuantity = data[dropzone][totes] ? Object.entries(data[dropzone][totes]).reduce((acc,val) => {
-     // console.log({val})
+    let newTotalQuantity
+     newTotalQuantity = data[dropzone][totes] && 
+     Object.entries(data[dropzone][totes]).reduce((acc,val) => {
       if (val[0] === 'total' || val[0] === "NextCPT") return
       if (!Array.isArray(val[1])) return acc
       const total = val[1].reduce((acc,val) => {
-        return parseInt(val.Quantity) + acc}, 0)
-
-      
+        return parseInt(val.Quantity) + acc
+      }, 0)
       return (total + acc)
-    },0) : 0
+      },0)
 
     newTotalQuantity = newTotalQuantity ? newTotalQuantity : 0
 
     data[dropzone]['total'] = data[dropzone]['total'] ? data[dropzone]['total'] + newTotalQuantity : newTotalQuantity 
     newTotalQuantity ? data[dropzone][totes].total = newTotalQuantity : null
 
-let nextCPT
+    let nextCPT
     if (data[dropzone][totes]) {
     nextCPT = data[dropzone][totes] && Object.keys(data[dropzone][totes]).reduce((acc,val) => {
       if (acc === 0) return val
@@ -43,7 +43,7 @@ let nextCPT
       const isValNextCPT = acc > val
       
       const returnValue = isValNextCPT ? val : acc
-     // console.log("reducer",acc,val,isValNextCPT,returnValue)  
+     // //.log("reducer",acc,val,isValNextCPT,returnValue)  
         
       return returnValue
     },0)
@@ -65,17 +65,16 @@ let nextCPT
        CPTlist.forEach(selector => {
 
         if (activeTote === "bg-red-500") return
-         const stringToSearch = `${day} ${selector}`
-    const isInductPrio = prioCPT === stringToSearch && potentiel < 0
-        console.log("isInductPrio",stringToSearch,prioCPT,isInductPrio)
-           JSON.stringify(data[dropzone][totes]).includes(stringToSearch) || isInductPrio  ? 
+          const isInductPrio = prioCPT === selector && potentiel < 0
+        //console.log("isInductPrio",selector," = ",prioCPT,isInductPrio)
+           JSON.stringify(data[dropzone][totes]).includes(selector) || isInductPrio  ? 
            activeTote = "bg-red-500" : activeTote = "bg-blue-500"
          }
          )
      } else {
               if (activeTote === "bg-red-500") return
     const isInductPrio = prioCPT === nextCPT && potentiel < 0
-        console.log("isInductPrio",prioCPT,isInductPrio)
+        console.log("isInductPrio",prioCPT,' = ',nextCPT," & ",potentiel, "< 0 ?")
            isInductPrio  ? 
            activeTote = "bg-red-500" : activeTote = "bg-blue-500"
      }
@@ -90,7 +89,7 @@ let nextCPT
    
    if (!data?.[dropzone]) return 
    
-      // console.log({data})
+      // //console.log({data})
 
    return <>
    {render}
@@ -99,17 +98,17 @@ let nextCPT
 
   const handleToteLook = (totes,event,updateIBC) => {
     if (!event) return
-     console.log("handleToteLook",totes,{event})
+     //console.log("handleToteLook",totes,{event})
      const renderInInfoBox = event && Object.entries(event).map((entries) => {
       const [cpt,quantity] = entries
-      console.log("handleToteLook entrie",cpt,quantity)
+      //console.log("handleToteLook entrie",cpt,quantity)
       return (
         <div key={cpt+quantity} >
             <span className='px-1'>{cpt.substring(5)}</span>
             <span className='px-1'>{String(Object.values(quantity).reduce((acc,val) => {return acc + Number(val["Quantity"])},0))}</span>
         </div>)
     })
-    console.log("handleToteLook",renderInInfoBox)
+    //console.log("handleToteLook",renderInInfoBox)
     
     updateIBC(<><div  className='grid grid-rows-4 grid-cols-4 grid-flow-row m-3 mb-5 bg-slate-100'><div className="col-span-4 text-center font-bold bg-slate-200">{totes}</div>{renderInInfoBox}</div></>)
     

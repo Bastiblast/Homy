@@ -1,4 +1,3 @@
-import React, { MouseEventHandler, useState } from 'react'
 import {uzeCPTSelection} from './uzeSelectedCPT'
 import { uzeStore } from '../store/uzeStore'
 
@@ -25,10 +24,11 @@ const CPTtemplate = []
   return (
     <>
     {CPTarray.map((val,index) => {
-        const isActive = CPTlist.includes(val[0]) ? "bg-green-500" : null
-        console.log({CPTlist})
+        const isActive = CPTlist.includes(val[1]) ? "bg-green-500" : null
+        console.log("cpt button",val,index,{CPTlist})
         return <button key={val+index}
         className={"btn btn-sm m-1 " + isActive}
+        data-time={val[1]}
         onClick={handleClick}
         >{val[0]}</button>
     })}

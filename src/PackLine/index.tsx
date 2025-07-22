@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import {uzeCPTSelection} from '../Header/uzeSelectedCPT'
-import { uzeRodeo } from '../Header/uzeRodeo'
 import { uzeStore } from '../store/uzeStore'
 import RenderTote from './Tote'
 import RenderBuffer from './Buffer'
@@ -22,7 +21,7 @@ export default function PackLine() {
     
     const day = uzeCPTSelection(s => s.day)
     const infoBoxRef = uzeStore(s => s.infoBoxRef)
-
+    const pageTime = uzeStore(s => s.pageTime)
     const headcount = uzeStore(s => s.headcount)
     const updateTotalHeadCount = uzeStore(s => s.updateTotalHeadCount)
 
@@ -64,7 +63,7 @@ export default function PackLine() {
               wsCPT = dataTotal[`ws_Singles_0${poste}`]?.NextCPT
               stationCPT = dataTotal[`dz-P-OB-Single-cvg-${poste}`]?.NextCPT
               nextCPT = wsCPT < stationCPT ? wsCPT : stationCPT
-              remaingTime = ((Date.parse(nextCPT) - Date.now()) / 1000 / 60 /60 )
+              remaingTime = ((Date.parse(nextCPT) - pageTime) / 1000 / 60 /60 )
 
               timeToFinish = renderUnits / capacityDetails?.userPreference.UPH
               potentiel = (remaingTime - (timeToFinish + (capacityDetails?.userPreference.TBCPT/60)))

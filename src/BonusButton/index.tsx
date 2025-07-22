@@ -21,24 +21,24 @@ export default function index() {
 
     const dataPick = uzeStore(s => s.dataPick)
     const dataCapa = uzeStore(s => s.dataCapa)
-
+    const pageTime = uzeStore(s => s.pageTime)
     const refresher = uzeStore(s => s.refresher)
 
     const isOutDated = (stamp,sec) => {
       if (!stamp || !sec) return  
-      const isOutDated = !((Date.now() - sec) / 1000) < sec 
-      console.log(new Date(stamp).toLocaleTimeString("fr-FR")," is out dated ? ",isOutDated)
+      const isOutDated = !((pageTime - sec) / 1000) < sec 
+      //console.log(new Date(stamp).toLocaleTimeString("fr-FR")," is out dated ? ",isOutDated)
       return isOutDated
     }
 
     const handlePDP = () => {
-        console.log("click")
+        //console.log("click")
         updatePDPData()
     }
 
     useEffect(() => {
         const newIBCContent = renderPick(dataPick)
-        console.log("refresh and upload new IBC from index ",newIBCContent)
+        //console.log("refresh and upload new IBC from index ",newIBCContent)
         updateIBC(renderPick(dataPick))
       }, [dataPick])
     
@@ -50,17 +50,17 @@ export default function index() {
 
     useEffect(() => {
       if (!dataCapa) return
-      console.log("update IBC with dataCapa : ",dataCapa)
+      //console.log("update IBC with dataCapa : ",dataCapa)
       updateIBC(<CapaTable data={dataCapa} />)
     }, [dataCapa])
 
     const handleCapa = async () => {
 
       if (dataCapaAge && isOutDated(dataCapaAge,180)) {
-        console.log("Capacity data is out dated ? ",isOutDated(dataCapaAge,180))
+        //console.log("Capacity data is out dated ? ",isOutDated(dataCapaAge,180))
         updateIBC(<CapaTable data={dataCapa} />)}
       else {
-        console.log("Capacity data fetching...")
+        //console.log("Capacity data fetching...")
         
       updateIBC("Loading...")
       updateCapaRefresher("loading")

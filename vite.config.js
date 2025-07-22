@@ -10,11 +10,11 @@ export default defineConfig({
     monkey({
       entry: 'src/main.jsx',
       userscript: {
-        version: "0.2.0",
+        version: "0.4.0",
         author: "bmillion",
-        icon: 'https://vitejs.dev/logo.svg',
-        namespace: 'npm/vite-plugin-monkey',
-        match: ['https://share.amazon.com/sites/bmillion/Shared%20Documents/React/Pack%20Single%20-%20Homy/index.html'],
+        icon: 'https://share.amazon.com/sites/bmillion/Shared%20Documents/Homy/lion-vector-illustration-outline-coloring.png',
+        namespace: 'bmillion/packSingleUtility',
+        match: ['https://share.amazon.com/sites/bmillion/Shared%20Documents/Homy/index.html'],
       },
       build: {
         externalGlobals: {

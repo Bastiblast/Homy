@@ -22,7 +22,7 @@ export const uzePackMan = create<uzePackMan>((set,get)=>({
     },
     getPackManData: () => {
         if (get().PMrefresher === "done") return
-        const timeStamp = (Date.now() / 1000).toFixed(3)
+        const timeStamp = (get().pageTime / 1000).toFixed(3)
     const postBody: string = `{"warehouseId":"MRS1","startTime":${Number(timeStamp) - 36000},"endTime":${timeStamp}}`
     const bodyTester = '{"warehouseId":"MRS1","startTime":1733217726.292,"endTime":1733221326.292}'
     console.log({postBody})

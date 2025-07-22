@@ -16,8 +16,7 @@ export default function Buffer({dz}) {
       const [tote,cptunits] = filter
         let isPrio
         CPTlist.forEach(cpt => {
-          const stringToSearch = `${day} ${cpt}`
-          !isPrio ? isPrio = JSON.stringify(data[dz][tote]).includes(stringToSearch) : null
+          !isPrio ? isPrio = JSON.stringify(data[dz][tote]).includes(cpt) : null
         })
         return isPrio
 

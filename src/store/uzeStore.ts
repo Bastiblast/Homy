@@ -14,7 +14,7 @@ const urlCSVrodeo = `https://rodeo-dub.amazon.com/MRS1/ItemListCSV?_enabledColum
 // &WorkPool=PickingNotYetPicked&enabledColumns=ASIN_TITLES&enabledColumns=OUTER_SCANNABLE_ID&Excel=false
 // &ExSDRange.RangeStartMillis=${rangeStartMillis}&ExSDRange.RangeEndMillis=${rangeEndMillis}&Fracs=NON_FRACS&ProcessPath=PPSingleMedium&shipmentType=CUSTOMER_SHIPMENTS`
 
-const urlCSVPickSummary = `https://rodeo-dub.amazon.com/MRS1/CSV/ExSD?isEulerUpgraded=ALL&processPath=&fnSku=&fulfillmentServiceClass=ALL&exSDRange.quickRange=TODAY
+const urlCSVPickSummary = `https://rodeo-dub.amazon.com/MRS1/CSV/ExSD?isEulerUpgraded=ALL&processPath=&fnSku=&fulfillmentServiceClass=ALL&exSDRange.quickRange=PLUS_MINUS_1_DAY
 &isEulerPromiseMiss=ALL&zAxis=PROCESS_PATH&sortCode=&isEulerExSDMiss=ALL&exSDRange.dailyEnd=00%3A00&exSDRange.dailyStart=00%3A00&yAxis=WORK_POOL
 &isReactiveTransfer=ALL&minPickPriority=MIN_PRIORITY&Excel=false&fracs=NON_FRACS&shipMethod=&shipmentTypes=CUSTOMER_SHIPMENTS&_workPool=on
 &_workPool=on&_workPool=on&_workPool=on&workPool=PredictedCharge&workPool=PlannedShipment&workPool=ReadyToPick&workPool=ReadyToPickHardCapped
@@ -50,6 +50,8 @@ interface CapacityDetails {
 }
 
 interface Store {
+  pageTime : number;
+  updatePageTime : (newTime: number) => void;
   singleLaneMapping : any;
   headcount: {
     ligne1: Map<string, string> ;
@@ -96,6 +98,8 @@ const PDPurl = "https://share.amazon.com/sites/MRS1-PDP/Documents%20partages/MRS
 
 export const uzeStore = create<Store>(
   (set,get)=>({
+  pageTime: 0,
+  updatePageTime: (newTime) => set ({pageTime: newTime}),
   environnement: 'production',
   singleLaneMapping : {
     Ligne1: [107,108,109,110,111,112,113,114,115,116,117],
@@ -195,7 +199,7 @@ updatePickRefresher: (status: string) => {
   get().getRodeoPickData()
 },
   getRodeoCapa: async () => {
-    const stamp = Date.now()
+    const stamp = get().pageTime
     const rangeStartMillis = String(stamp - 3600000).slice(0,8) +"99999"
     const rangeEndMillis = stamp + (3600000 * 4)
 
@@ -304,7 +308,7 @@ updatePickRefresher: (status: string) => {
 
   console.log("getRodeoData mergedPickingAndPickedArray ",mergedPickingAndPickedArray)
 
-  set({dataCapa:mergedPickingAndPickedArray,refresherCapa:"done",dataCapaAge:Date.now()})
+  set({dataCapa:mergedPickingAndPickedArray,refresherCapa:"done",dataCapaAge:get().pageTime})
 
     return 
   },
@@ -373,11 +377,11 @@ updatePickRefresher: (status: string) => {
         CPTMap.has(unitExpectShipDate) ? CPTMap.set(unitExpectShipDate, CPTMap.get(unitExpectShipDate) + unitQuantity) : CPTMap.set(unitExpectShipDate,unitQuantity)
     })
 
-    set({refresherPick: "done",dataPickAge:Date.now()})
+    set({refresherPick: "done",dataPickAge:get().pageTime})
     
     const CPTArray = [...CPTMap].sort()
     console.log({CPTArray})
-    set({dataPick: CPTArray})
+    set({dataPick: CPTArray.slice(0,6)})
 
     
 

@@ -1,6 +1,5 @@
 import PackLine from './PackLine/index';
 import MultiSelectorBtn from './Header/MultiSelectorBtn';
-import DaySelector from './Header/DaySelector';
 import { uzeStore } from './store/uzeStore';
 import InfoBox from './PackLine/InfoBox';
 import TotalHeadCount from './PackLine/TotalHeadCount';
@@ -11,12 +10,27 @@ function App() {
   const updateRefresher = uzeStore(s => s.updateRefresher)
   const refresher = uzeStore(s => s.refresher)
   const updateCapacityDetails = uzeStore(s => s.updateCapacityDetails)
+  const updatePickRefresher = uzeStore(s => s.updatePickRefresher)
+
+  const pageTime = uzeStore(s => s.pageTime)
+  const updatePageTime = uzeStore(s => s.updatePageTime)
 
 const refreshHandle = () => {
   updateRefresher("loading")
 }
 
 useEffect(() => {
+  const stamp = Date.now()
+
+  const timer = setInterval(() => {
+    updatePageTime(stamp)
+    console.log("timer")
+  },10000)
+  return () => clearInterval(timer)
+})
+
+useEffect(() => {
+  if (pageTime) return
   const storedValue = GM_getValue("Homy_capacityDetails")
   const initValue = storedValue ? JSON.parse(storedValue) : {
   dataTime: 0,
@@ -27,6 +41,7 @@ useEffect(() => {
 
 }
   updateCapacityDetails(initValue)
+  updatePickRefresher("loading")
 })
 
   return (
@@ -41,7 +56,6 @@ useEffect(() => {
           <MultiSelectorBtn />
           <div className='flex flex-col mx-2 items-center'>
             <label htmlFor="" className='flex items-center'>Date</label>
-            <DaySelector />
           </div>
           {refresher === "loading" ? <button className='btn text-white mx-2 w-20' disabled><span className=' loading loading-spinner loading-xl'></span></button> : <button className='btn mx-2 w-20' onClick={refreshHandle}>Refresh</button>}
           </div>
