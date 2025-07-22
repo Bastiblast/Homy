@@ -57,26 +57,24 @@ export default function RenderPoste({dropzone,inductPrio}) {
 
  // console.log(data)
     updateDataTotal(data)
-   let activeTote = "bg-blue-500"
+   let activeTote
 
  
    
      if (CPTlist.length > 0) {
        CPTlist.forEach(selector => {
-
         if (activeTote === "bg-red-500") return
           const isInductPrio = prioCPT === selector && potentiel < 0
         //console.log("isInductPrio",selector," = ",prioCPT,isInductPrio)
-           JSON.stringify(data[dropzone][totes]).includes(selector) || isInductPrio  ? 
+           JSON.stringify(data[dropzone][totes]).includes(selector) || isInductPrio === true  ? 
            activeTote = "bg-red-500" : activeTote = "bg-blue-500"
          }
          )
      } else {
               if (activeTote === "bg-red-500") return
-    const isInductPrio = prioCPT === nextCPT && potentiel < 0
-        console.log("isInductPrio",prioCPT,' = ',nextCPT," & ",potentiel, "< 0 ?")
-           isInductPrio  ? 
-           activeTote = "bg-red-500" : activeTote = "bg-blue-500"
+    const isInductPrio = JSON.stringify(data[dropzone][totes]).includes(nextCPT) && potentiel < 0
+    isInductPrio === true ? activeTote = "bg-red-500" : activeTote = "bg-blue-500"
+    console.log("isInductPrio",totes,prioCPT,' = ',nextCPT,prioCPT === nextCPT," & ",potentiel, "< 0 ?",isInductPrio,activeTote)
      }
 
    return (

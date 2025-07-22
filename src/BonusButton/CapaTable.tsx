@@ -1,23 +1,39 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef} from 'react'
 import { uzeStore } from '../store/uzeStore'
 import {GM} from '$'
 import ActivityDetails from './activityDetails'
 
 export default function CapaTable(data) {
 
-    //console.log("CapaTable data",data)
+    console.log("CapaTable data",data)
     const totalHeadCount = uzeStore(s => s.totalHeadCount)
     const pageTime = uzeStore(s => s.pageTime)
+
+    const UPH = uzeStore(s => s.UPH)
+    const updateUPH = uzeStore(s => s.updateUPH)
+    const TBCPT = uzeStore(s => s.TBCPT)
+    const updateTBCPT = uzeStore(s => s.updateTBCPT)
+
+
+    useEffect(() => {
+      GM.getValue("Homy_capacityDetails")
+      .then(value => {
+          if (value) {
+              const json = JSON.parse(value)
+              console.log("get gm value",value,"TBCPT",json.userPreference.TBCPT)
+            updateUPH(json.userPreference.UPH)
+            updateTBCPT(json.userPreference.TBCPT)
+        }
+      })
     
-    const [UPH,setUPH] = useState<null | number>(null)
-    const [timeBeforeFinish,setTimeBeforeFinish] = useState<null | number>(null)
-    const [customHC,setCustomHC] = useState<null | number>(totalHeadCount)
+    }, [])
     
+
     let totalPick = 0
 
     const procced = useRef(new Map())
   
-    const noPackerWarning = customHC === 0 && <span className='col-span-full'>Indiquer un nombre de pack pour calculer la capacité.</span>
+    const noPackerWarning = totalHeadCount === 0 && <span className='col-span-full'>Indiquer un nombre de pack pour calculer la capacité.</span>
 
     const dataObject = data.data
 
@@ -30,40 +46,15 @@ export default function CapaTable(data) {
 
     const mapToArray = [...dataObject.entries()].sort()
 
-    //console.log("CapaTable array ",mapToArray)
+    console.log("CapaTable array ",mapToArray)
 
 
-            useEffect(() => {
-            
-            //console.log("Trying cache user preference....")
-            GM.getValue("Homy_capacityDetails")
-            .then(GMValue => {
-                if (!GMValue || GMValue == undefined) {
-                    setUPH(145)
-                    setTimeBeforeFinish(45)
-                } else {
-    
-                //console.log('GM_getValue("Homy_capacityDetails")',GMValue)
-                const info = GMValue ? JSON.parse(GMValue) : null
-                setUPH(isNaN(info.userPreference.UPH) || !info.userPreference.UPH  ? 145 : info.userPreference.UPH )
-                setTimeBeforeFinish(isNaN(info.userPreference.TBCPT) || !info.userPreference.TBCPT ? 45 : info.userPreference.TBCPT )
-                }
-            })
-            
-        }, [])
-            
-        
-            useEffect(() => {
-                console.log("CapaTable",{totalHeadCount})
-                setCustomHC(totalHeadCount)
-            }, [totalHeadCount])
-
-    const capaTable = (UPH,timeBeforeFinish) => mapToArray.map((CPT,index) => {
+    const capaTable = (UPH,TBCPT,totalHeadCount) => mapToArray.map((CPT,index) => {
 
         
-        //console.log("CapaTable CPT index",CPT,index)
+        console.log("CapaTable CPT index",CPT,index,UPH,TBCPT)
 
-        if (!UPH || !timeBeforeFinish) return 
+        if (!UPH || !TBCPT) return 
 
         const [cpt,listValue] = CPT
 
@@ -77,7 +68,7 @@ export default function CapaTable(data) {
         const remainingTime = Math.round((dateCPT - dateAct) / 60 / 1000)
 
 
-        const deadLineTime = remainingTime - timeBeforeFinish > 0 ? remainingTime - timeBeforeFinish : 0
+        const deadLineTime = remainingTime - TBCPT > 0 ? remainingTime - TBCPT : 0
 
         //console.log("CapaTable debug",{dateCPT},{pageTime},{dateAct},remainingTime)
 
@@ -106,7 +97,7 @@ export default function CapaTable(data) {
 
         const packCalculation = Math.ceil(Number(allUnitNumber)/UPH/(deadLineTime/60))
         const packerNeeded = deadLineTime === 0 ? "Finish" : (String(packCalculation) + " pack")
-        console.log("CapaTable headers ",header)
+        //console.log("CapaTable headers ",header)
 
         const riskStyle = () =>  {
             const color = {
@@ -117,11 +108,11 @@ export default function CapaTable(data) {
                 carefull: "bg-amber-100",
                 peace: "bg-lime-300",
             }
-            if (!customHC) return color[""]
-            console.log("CapaTable risk calculating ",customHC,packerNeeded)
+            if (!totalHeadCount) return color[""]
+            //console.log("CapaTable risk calculating ",customHC,packerNeeded)
 
-            const percentRisk = customHC / packCalculation
-            console.log("CapaTable risk calculating ",percentRisk)
+            const percentRisk = totalHeadCount / packCalculation
+            //console.log("CapaTable risk calculating ",percentRisk)
             if (percentRisk < 0.5) return color["danger"]
             if (percentRisk < 0.75) return color["high"]
             if (percentRisk < 0.90) return color["medium"]
@@ -173,7 +164,7 @@ export default function CapaTable(data) {
             <div className='text-center px-4 font-bold border-b-2 h-8'>Attendu</div>
         
 
-            {dataObject.size > 0 && capaTable(UPH,timeBeforeFinish)}
+            {dataObject.size > 0 && capaTable(UPH,TBCPT,totalHeadCount)}
            
            {noDataWarning || noPackerWarning}
            

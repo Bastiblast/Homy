@@ -24,28 +24,29 @@ useEffect(() => {
 
   const timer = setInterval(() => {
     updatePageTime(stamp)
-    console.log("timer")
+    //console.log("timer")
   },10000)
   return () => clearInterval(timer)
 })
 
 useEffect(() => {
-  if (pageTime) return
-  const storedValue = GM_getValue("Homy_capacityDetails")
-  const initValue = storedValue ? JSON.parse(storedValue) : {
-  dataTime: 0,
-  userPreference: {
-    UPH: 145,
-    TBCPT: 45,
-  }
+  console.log({pageTime})
+    if (pageTime) return
+    const storedValue = GM_getValue("Homy_capacityDetails")
+    const initValue = storedValue ? JSON.parse(storedValue) : {
+    dataTime: 0,
+    userPreference: {
+      UPH: 145,
+      TBCPT: 45,
+    }
 
-}
-  updateCapacityDetails(initValue)
-  updatePickRefresher("loading")
-})
+  }
+    updateCapacityDetails(initValue)
+    updatePickRefresher("loading")
+},[])
 
   return (
-    <div className="App h-full bg-gradient-to-b from-white to-violet-500">
+    <div className="App h-full bg-gradient-to-b from-white to-violet-500 p-4">
 
       <header className='flex justify-between p-2'>
         <div className='flex flex-col justify-between'>
@@ -54,9 +55,7 @@ useEffect(() => {
           <div className='flex flex-row'>
 
           <MultiSelectorBtn />
-          <div className='flex flex-col mx-2 items-center'>
-            <label htmlFor="" className='flex items-center'>Date</label>
-          </div>
+
           {refresher === "loading" ? <button className='btn text-white mx-2 w-20' disabled><span className=' loading loading-spinner loading-xl'></span></button> : <button className='btn mx-2 w-20' onClick={refreshHandle}>Refresh</button>}
           </div>
         </div>

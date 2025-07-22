@@ -2,11 +2,11 @@ import { ReactNode } from 'react';
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import {GM,GM_xmlhttpRequest,GM_setValue} from '$'
-import ShiftPaternSelector from '../BonusButton/ShiftPaternSelector';
 import {staticPDPDatas} from '../packSinglePDP'
 import {staticRodeoDatas} from '../shipmentItemList'
 import {staticPickDatas} from '../pickSumList'
 import csv from 'csvtojson'
+import { capaRodeoStatic } from '../capaRodeo';
 
 const urlCSVrodeo = `https://rodeo-dub.amazon.com/MRS1/ItemListCSV?_enabledColumns=on&WorkPool=PickingPickedAtDestination&enabledColumns=ASIN_TITLES&enabledColumns=DEMAND_ID&enabledColumns=OUTER_SCANNABLE_ID&enabledColumns=SORT_CODE&Excel=false&Fracs=NON_FRACS&ProcessPath=PPSingleMedium&shipmentType=CUSTOMER_SHIPMENTS`
 
@@ -49,6 +49,12 @@ interface CapacityDetails {
 
 }
 
+  type headcount = {
+    ligne1: Map<string, string> ;
+    ligne2: Map<string, string> ;
+    ligne3: Map<string, string> ;
+    ligne4: Map<string, string> ;
+  }
 interface Store {
   pageTime : number;
   updatePageTime : (newTime: number) => void;
@@ -61,7 +67,7 @@ interface Store {
   },
   totalHeadCount: null | number,
   updateTotalHeadCount: (number) => void,
-  updateHeadcount: (newCount: {}) => void;
+  updateHeadcount: (newCount: headcount) => void;
   capacityDetails: null | CapacityDetails;
   updateCapacityDetails: (CapacityDetails) => void;
   infoBoxContent: null | ReactNode;
@@ -100,7 +106,7 @@ export const uzeStore = create<Store>(
   (set,get)=>({
   pageTime: 0,
   updatePageTime: (newTime) => set ({pageTime: newTime}),
-  environnement: 'production',
+  environnement: 'developpement',
   singleLaneMapping : {
     Ligne1: [107,108,109,110,111,112,113,114,115,116,117],
     Ligne2: [209,210,211,212,213,214,215,216],
@@ -120,19 +126,27 @@ export const uzeStore = create<Store>(
   updateHeadcount: (newCount) => {
     set({headcount: newCount})
   },
+  UPH: 140,
+  updateUPH: (newCount) => {
+    set({UPH: newCount})
+  },
+  TBCPT: 45,
+  updateTBCPT: (newCount) => {
+    set({TBCPT: newCount})
+  },
   infoBoxContent: null,
   infoBoxRef: null,
   capacityDetails: null,
   updateCapacityDetails: (CapacityDetails:CapacityDetails) => {
-    console.log("updateCapacityDetails receive new details :",CapacityDetails)
+    //console.log("updateCapacityDetails receive new details :",CapacityDetails)
     GM_setValue("Homy_capacityDetails",JSON.stringify(CapacityDetails))
     set({capacityDetails: CapacityDetails})},
   updateIBR: (newIBR) => {
-      console.log("updateIBR to : ",newIBR)
+      //console.log("updateIBR to : ",newIBR)
       set({infoBoxRef: newIBR})
   },
   updateIBC: (newIBC) => {
-      console.log("updateIBC to : ",newIBC)
+      //console.log("updateIBC to : ",newIBC)
       set({infoBoxContent: newIBC})
   },
   PDPdata : null,
@@ -160,9 +174,10 @@ export const uzeStore = create<Store>(
         const jsonString = response.responseText.substring(jsonStart + 15 ,jsonEnd + 1)
         const json = JSON.parse(jsonString)
         const packSinglePDP = Object.values(json).filter(row => {
-          return row[2] === "Pack Single Medium" || row[2] === "Pack&Ship"
+          const processName = row[2] as string
+          return processName === "Pack Single Medium" || processName === "Pack&Ship"
         })
-        console.log({packSinglePDP})
+        //console.log({packSinglePDP})
         get().updateIBC("shift")
         set( ({ PDPdata : packSinglePDP }) )      
       },
@@ -199,23 +214,60 @@ updatePickRefresher: (status: string) => {
   get().getRodeoPickData()
 },
   getRodeoCapa: async () => {
+    if (get().refresherCapa === "done") return
+    if (get().environnement === "developpement") {
+  set({dataCapa:capaRodeoStatic,refresherCapa:"done",dataCapaAge:get().pageTime})
+return
+    }
     const stamp = get().pageTime
     const rangeStartMillis = String(stamp - 3600000).slice(0,8) +"99999"
     const rangeEndMillis = stamp + (3600000 * 4)
 
     const processPath = ["PickingNotYetPicked","PickingPicked"].map(pp => "WorkPool="+pp+"&" )
 
-    const promises = await processPath.map(pp => {
+ 
+   const promises = await processPath.map(pp => {
       const urlCSVCapaRodeo = decodeURI(`https://rodeo-dub.amazon.com/MRS1/ItemListCSV?_enabledColumns=on&${pp}enabledColumns=ASIN_TITLES&enabledColumns=OUTER_SCANNABLE_ID&ExSDRange.RangeStartMillis=${rangeStartMillis}&ExSDRange.RangeEndMillis=${rangeEndMillis}&Fracs=NON_FRACS&ProcessPath=PPSingleMedium&shipmentType=CUSTOMER_SHIPMENTS`)
-      return GM.xmlHttpRequest({method:"GET",url:urlCSVCapaRodeo,overrideMimeType:"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"})
+      return GM.xmlHttpRequest({
+        method:"GET",
+        url:urlCSVCapaRodeo, 
+        headers: {
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "accept-language": "en-US,en;q=0.9,fr-FR;q=0.8,fr;q=0.7",
+    "cache-control": "max-age=0",
+    "priority": "u=0, i",
+    "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "document",
+    "sec-fetch-mode": "navigate",
+    "sec-fetch-site": "none",
+    "sec-fetch-user": "?1",
+    "upgrade-insecure-requests": "1"
+  }
+
+      })
         .then(resp => csv().fromString(resp.responseText))
-        .then(array => array)
+        .then(array => {
+          console.log("getting rodeo CSV",array)
+          return array})
     })
+  
+  
 
     const [pickingArray,pickedArray] = await Promise.all(promises)
+    
+    console.log(pickingArray.length,pickedArray.length)
 
+    if (pickingArray.length === 0 && pickedArray.length === 0) {
+      console.log("cancelling")
+      get().updateCapaRefresher(get().refresherCapa + ".")
+      get().updateIBC("Rodeo query")
+      return
+    }
+      get().updateIBC("Building Tab")
 
-    console.log("getCap response ",promises,pickedArray,pickedArray)
+    //console.log("getCap response ",promises,pickedArray,pickedArray)
     const mappingCPTpicking = new Map()
     pickingArray.forEach(shipment => {
       const cpt = shipment["Expected Ship Date"]
@@ -246,7 +298,8 @@ updatePickRefresher: (status: string) => {
       const urlByTote = `https://rodeo-dub.amazon.com/MRS1/SearchCSV?_enabledColumns=on&enabledColumns=ASIN_TITLES&enabledColumns=OUTER_SCANNABLE_ID&Excel=false&searchKey=${tote}&shipmentType=CUSTOMER_SHIPMENTS`
       const response = GM.xmlHttpRequest({method: "GET",url:urlByTote})
       .then(resp => csv().fromString(resp.responseText))
-      .then(shipments => {return {tote: tote,shipments:shipments.length}})
+      .then(shipments => {
+        return {tote: tote,shipments:shipments.length}})
 
       return response
     })
@@ -277,8 +330,8 @@ updatePickRefresher: (status: string) => {
     })
 
 
-    console.log("getRodeoData mapping picking",mappingCPTpicking)
-    console.log("getRodeoData mapping picked",mappingCPTpicked)
+    //console.log("getRodeoData mapping picking",mappingCPTpicking)
+    //console.log("getRodeoData mapping picked",mappingCPTpicked)
   const mergedPickingAndPickedArray = new Map()
 
   const CPTpickingArray = [...mappingCPTpicking]
@@ -314,14 +367,14 @@ updatePickRefresher: (status: string) => {
   },
   getRodeoData: () => {
     if (get().refresher === "done") return
-    console.log("urlCSVrodeo ",decodeURI(urlCSVrodeo))
+    //console.log("urlCSVrodeo ",decodeURI(urlCSVrodeo))
     switch (get().environnement) {
       case 'production' :
             GM_xmlhttpRequest({
     method: "GET",
     url: decodeURI(urlCSVrodeo),
     onload: function(response) {
-      console.log("urlCSVrodeo response ",response,response.responseText)
+      //console.log("urlCSVrodeo response ",response,response.responseText)
       csv().fromString(response.responseText).then((csvRow) => {
       set({refresher: "done"})
       set({arrayData: csvRow})
@@ -332,7 +385,7 @@ updatePickRefresher: (status: string) => {
   })
   break
   case 'developpement' :
-    console.log("staticRodeoDatas",staticRodeoDatas, typeof staticRodeoDatas)
+    //console.log("staticRodeoDatas",staticRodeoDatas, typeof staticRodeoDatas)
       csv().fromString(staticRodeoDatas).then((csvRow) => {
     
       set({refresher: "done"})
@@ -363,24 +416,29 @@ updatePickRefresher: (status: string) => {
 
     const CPTMap = new Map()
 
-    console.log("pickData response",response)
+    //console.log("pickData response",response)
 
     const alternateConvert = await csv().fromString(response)
     alternateConvert.forEach(row => {
+      //console.log("data pick",row)
         const unitExpectShipDate = row["ExSD"]
         const unitQuantity = Number(row["Quantity"])
         const unitPP = row["Process Path"]
         const unitWorpPool = row["Work Pool"]
 
-        const allowedWorkPool = ["PickingNotYetPicked"]
+        const allowedWorkPool = ["PickingNotYetPicked","PickingPicked"]
         if (isNaN(unitQuantity) || unitPP !== "PPSingleMedium" || !allowedWorkPool.includes(unitWorpPool)) return
-        CPTMap.has(unitExpectShipDate) ? CPTMap.set(unitExpectShipDate, CPTMap.get(unitExpectShipDate) + unitQuantity) : CPTMap.set(unitExpectShipDate,unitQuantity)
+        if (unitWorpPool === "PickingPicked") {
+          CPTMap.has(unitExpectShipDate) ? null : CPTMap.set(unitExpectShipDate,0)
+        } else {
+          CPTMap.has(unitExpectShipDate) ? CPTMap.set(unitExpectShipDate, CPTMap.get(unitExpectShipDate) + unitQuantity) : CPTMap.set(unitExpectShipDate,unitQuantity)
+        }
     })
 
     set({refresherPick: "done",dataPickAge:get().pageTime})
     
     const CPTArray = [...CPTMap].sort()
-    console.log({CPTArray})
+    //console.log({CPTArray})
     set({dataPick: CPTArray.slice(0,6)})
 
     
@@ -403,7 +461,7 @@ updatePickRefresher: (status: string) => {
           csvGroupByDZ[key][keyz] = zubGroup
         })
       })
-      console.log("Json build",csvGroupByDZ)
+      //console.log("Json build",csvGroupByDZ)
       return csvGroupByDZ
   }
 

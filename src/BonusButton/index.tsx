@@ -23,6 +23,9 @@ export default function index() {
     const dataCapa = uzeStore(s => s.dataCapa)
     const pageTime = uzeStore(s => s.pageTime)
     const refresher = uzeStore(s => s.refresher)
+    const refresherCapa = uzeStore(s => s.refresherCapa)
+    const refresherPick = uzeStore(s => s.refresherPick)
+    const bonusDisabled = refresher === "loading" || refresherCapa.includes("loading")|| refresherPick === "loading"
 
     const isOutDated = (stamp,sec) => {
       if (!stamp || !sec) return  
@@ -56,7 +59,7 @@ export default function index() {
 
     const handleCapa = async () => {
 
-      if (dataCapaAge && isOutDated(dataCapaAge,180)) {
+      if (dataCapaAge && isOutDated(dataCapaAge,180) && dataCapa.size > 0) {
         //console.log("Capacity data is out dated ? ",isOutDated(dataCapaAge,180))
         updateIBC(<CapaTable data={dataCapa} />)}
       else {
@@ -76,12 +79,12 @@ export default function index() {
 
 
   return (
-    <div className='grid grid-cols-2 grid-rows-3 h-full justify-evenly'>
+    <div className='grid grid-cols-2 grid-rows-3 h-full justify-evenly pt-3'>
     <button className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={true}>PLAN</button>
-    <button onClick={handlePDP} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={refresher === "loading" ? true : false}>PDP</button>
-    <button onClick={handleCapa} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={refresher === "loading" ? true : false}>CAPA</button>
-    <button onClick={handlePick} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={refresher === "loading" ? true : false}>PICK</button>
-    <button onClick={handleDelete} className='btn m-1 rounded-none bg-red-400 shadow-md w-16 hidden' disabled={refresher === "loading" ? true : false}>Delete</button>
+    <button onClick={handlePDP} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={bonusDisabled}>PDP</button>
+    <button onClick={handleCapa} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={bonusDisabled}>CAPA</button>
+    <button onClick={handlePick} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={bonusDisabled}>PICK</button>
+    <button onClick={handleDelete} className='btn m-1 rounded-none bg-red-400 shadow-md w-16 hidden' disabled={bonusDisabled}>Delete</button>
   </div>
   )
 }

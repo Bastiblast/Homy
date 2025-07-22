@@ -25,7 +25,7 @@ const CPTtemplate = []
     <>
     {CPTarray.map((val,index) => {
         const isActive = CPTlist.includes(val[1]) ? "bg-green-500" : null
-        console.log("cpt button",val,index,{CPTlist})
+        //console.log("cpt button",val,index,{CPTlist})
         return <button key={val+index}
         className={"btn btn-sm m-1 " + isActive}
         data-time={val[1]}

@@ -1,13 +1,6 @@
-import React, { useEffect } from 'react'
-import { uzeRodeo } from '../Header/uzeRodeo'
-import { uzeStore } from '../store/uzeStore'
-import { uzeCPTSelection } from '../Header/uzeSelectedCPT'
-
 export default function Pick() {
       
-      const CPTlist = uzeCPTSelection(s => s.CPTlist)
-      const day = uzeCPTSelection(s => s.day)
-      
+
       const renderPick = (dataPick) => {
         !dataPick && console.log("There is no data")
 

@@ -5,6 +5,7 @@ import RenderTote from './Tote'
 import RenderBuffer from './Buffer'
 import HeadCount from './HeadCount'
 import AssociateInput from './AssociateInput'
+import searchOnRodeo from './onRodeoSearch'
 
 export default function PackLine() {
 
@@ -24,7 +25,9 @@ export default function PackLine() {
     const pageTime = uzeStore(s => s.pageTime)
     const headcount = uzeStore(s => s.headcount)
     const updateTotalHeadCount = uzeStore(s => s.updateTotalHeadCount)
-
+    const UPH = uzeStore(s => s.UPH)
+    const environnement = uzeStore(s => s.environnement)
+    const TBCPT = uzeStore(s => s.TBCPT)
     const valuesArray = Object.values(headcount)
     
     const newTotalHeadCount = valuesArray.reduce((acc,val) => acc + val.size,0)
@@ -57,7 +60,7 @@ export default function PackLine() {
               railUnit = dataTotal[`dz-P-OB-Single-cvg-${poste}`]?.total
               wsUnit = dataTotal[`ws_Singles_0${poste}`]?.total
               stationUnits = railUnit && wsUnit ? railUnit + wsUnit : railUnit ? railUnit : wsUnit
-              console.log(poste,stationUnits,{railUnit},{wsUnit})
+              //console.log(poste,stationUnits,{railUnit},{wsUnit})
               renderUnits = isNaN(stationUnits) ? null : stationUnits
               
               wsCPT = dataTotal[`ws_Singles_0${poste}`]?.NextCPT
@@ -65,18 +68,21 @@ export default function PackLine() {
               nextCPT = wsCPT < stationCPT ? wsCPT : stationCPT
               remaingTime = ((Date.parse(nextCPT) - pageTime) / 1000 / 60 /60 )
 
-              timeToFinish = renderUnits / capacityDetails?.userPreference.UPH
-              potentiel = (remaingTime - (timeToFinish + (capacityDetails?.userPreference.TBCPT/60)))
+              timeToFinish = renderUnits / UPH
+              potentiel = (remaingTime - (timeToFinish + (TBCPT/60)))
               stationColor = potentiel > 0 || isNaN(potentiel) ? 'flex flex-row shrink items-center bg-violet-400 p-1 m-1 justify-between rounded-md' :
               'flex flex-row shrink items-center bg-red-400 p-1 m-1 justify-between rounded-md'
 
             }
 
+
+            const stationSearchParams = `dz-P-OB-Single-cvg-${poste}+ws_Singles_0${poste}`
             return (
               <div className={stationColor} key={"L1" + "-" + poste}>
               <div className='flex flex-row w-full items-center'>
 
-                <span className='p-2 bg-lime-400 rounded-md'>{String(poste)}</span>
+                <span className='p-2 bg-lime-400 rounded-md'
+                onClick={() => searchOnRodeo(stationSearchParams)}>{String(poste)}</span>
                 <div className='flex flex-row'>
 
                 <AssociateInput poste={poste} />
@@ -91,7 +97,7 @@ export default function PackLine() {
                 </div>
               </div>
               <div className='w-12'>
-              {renderUnits && renderUnits}/u {timeToFinish && (timeToFinish * 60).toFixed(0)}/m            
+              {environnement === 'developpement' && renderUnits && renderUnits + "/u"} {environnement === 'developpement' && timeToFinish && (timeToFinish * 60).toFixed(0)  + "/m"}            
 
               </div>
             </div>

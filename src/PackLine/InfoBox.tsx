@@ -9,7 +9,7 @@ const infoBoxContent = uzeStore(s => s.infoBoxContent)
 
 const renderInfoBox = () => {
   if (!infoBoxContent) return
-  console.log("New infoboxcontent ",infoBoxContent)
+  //console.log("New infoboxcontent ",infoBoxContent)
   const render = infoBoxContent === "shift" ? <ShiftPaternSelector /> : infoBoxContent
   return render
 }
