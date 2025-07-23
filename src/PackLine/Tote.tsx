@@ -5,17 +5,19 @@ export default function RenderPoste({dropzone,inductPrio}) {
     
     const data = uzeStore(s => s.data)
     const updateDataTotal = uzeStore(s => s.updateDataTotal)
-    const CPTlist = uzeCPTSelection(s => s.CPTlist)
     const updateIBC = uzeStore(s => s.updateIBC)
+    const dataTotal = uzeStore(s => s.dataTotal)
+    const CPTlist = uzeCPTSelection(s => s.CPTlist)
+
     const {prioCPT,potentiel} = inductPrio
 
-   if (!data) return
+    if (!data) return
 
-   const someData = data[dropzone] ?? false
+    const someData = data[dropzone] ?? false
    
-   if (!someData) return
+    if (!someData) return
    
-   const render = Object.keys(data[dropzone]).map(totes => {
+    const render = Object.keys(data[dropzone]).map(totes => {
     if (totes === 'total' || totes === 'NextCPT') return
     //console.log("data",dropzone,totes,data[dropzone][totes],data)
 
@@ -36,7 +38,9 @@ export default function RenderPoste({dropzone,inductPrio}) {
     newTotalQuantity ? data[dropzone][totes].total = newTotalQuantity : null
 
     let nextCPT
+
     if (data[dropzone][totes]) {
+
     nextCPT = data[dropzone][totes] && Object.keys(data[dropzone][totes]).reduce((acc,val) => {
       if (acc === 0) return val
       if (val[0] === 'total' || val[0] === "NextCPT") return acc
@@ -48,11 +52,17 @@ export default function RenderPoste({dropzone,inductPrio}) {
       return returnValue
     },0)
 
+    if (data[dropzone][totes]['NextCPT']) {
+      nextCPT = data[dropzone][totes]['NextCPT'] < nextCPT ? data[dropzone][totes]['NextCPT'] : nextCPT
+    }
+    nextCPT === '0' ? null : data[dropzone][totes]['NextCPT'] = nextCPT
+
     if (data[dropzone]['NextCPT']) {
       nextCPT = data[dropzone]['NextCPT'] < nextCPT ? data[dropzone]['NextCPT'] : nextCPT
     }
-   // console.log("nextCPT",nextCPT,typeof nextCPT)
     nextCPT === '0' ? null : data[dropzone]['NextCPT'] = nextCPT
+   // console.log("nextCPT",nextCPT,typeof nextCPT)
+   
   }
 
  // console.log(data)
@@ -63,16 +73,16 @@ export default function RenderPoste({dropzone,inductPrio}) {
    
      if (CPTlist.length > 0) {
        CPTlist.forEach(selector => {
-        if (activeTote === "bg-red-500") return
-          const isInductPrio = prioCPT === selector && potentiel < 0
+        if (activeTote === "bg-red-500" || !dataTotal) return
+          const isInductPrio = dataTotal[dropzone][totes].NextCPT === selector && potentiel < 0
         //console.log("isInductPrio",selector," = ",prioCPT,isInductPrio)
            JSON.stringify(data[dropzone][totes]).includes(selector) || isInductPrio === true  ? 
            activeTote = "bg-red-500" : activeTote = "bg-blue-500"
          }
          )
      } else {
-              if (activeTote === "bg-red-500") return
-    const isInductPrio = JSON.stringify(data[dropzone][totes]).includes(nextCPT) && potentiel < 0
+    if (activeTote === "bg-red-500"  || !dataTotal) return
+    const isInductPrio = dataTotal[dropzone][totes].NextCPT === nextCPT && potentiel < 0
     isInductPrio === true ? activeTote = "bg-red-500" : activeTote = "bg-blue-500"
     console.log("isInductPrio",totes,prioCPT,' = ',nextCPT,prioCPT === nextCPT," & ",potentiel, "< 0 ?",isInductPrio,activeTote)
      }

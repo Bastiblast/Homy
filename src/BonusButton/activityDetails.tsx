@@ -27,13 +27,13 @@ export default function ActivityDetails() {
         .then(GMValue => {
             if (!GMValue || GMValue == undefined) {
                 updateUPH(145)
-                setTimeBeforeFinish(45)
+                updateTBCPT(45)
             } else {
 
             //console.log('GM_getValue("Homy_capacityDetails")',GMValue)
             const info = GMValue ? JSON.parse(GMValue) : null
             updateUPH(isNaN(info.userPreference.UPH) || !info.userPreference.UPH  ? 145 : info.userPreference.UPH )
-            setTimeBeforeFinish(isNaN(info.userPreference.TBCPT) || !info.userPreference.TBCPT ? 45 : info.userPreference.TBCPT )
+            updateTBCPT(isNaN(info.userPreference.TBCPT) || !info.userPreference.TBCPT ? 45 : info.userPreference.TBCPT )
             }
         })
         
@@ -41,18 +41,18 @@ export default function ActivityDetails() {
     
     
     useEffect(() => {
-        if (!UPH || !timeBeforeFinish) return
+        if (!UPH || !TBCPT) return
 
         updateCapacityDetails({
             dataTime: Date.now(),
             userPreference: {
               UPH: UPH,
-              TBCPT: timeBeforeFinish,
+              TBCPT: TBCPT,
             }
           
           })
   
-    }, [UPH,TBCPT,totalHeadCount])
+    }, [UPH,TBCPT])
     
 
     useEffect(() => {
@@ -69,7 +69,7 @@ export default function ActivityDetails() {
         <span className={`flex justify-end items-center pr-3`}>headcount</span>
         <input defaultValue={String(customHC)} ref={headcountRef} 
         onChange={(e) => updateTotalHeadCount(Number(e.target.value))}
-        type="number"className={`my-auto input input-xs border-blue-400 m-1 ` + emptyInputColor[customHC]} />
+        type="number"className={`my-auto input input-xs border-blue-400 m-1 ` + emptyInputColor[totalHeadCount ?? 0]} />
 
         <div className={'flex justify-end items-center pr-3'}>UPH</div>
         <input defaultValue={UPH} ref={UPHRef} type="number" 
@@ -77,9 +77,9 @@ export default function ActivityDetails() {
         className={'my-auto input input-xs border-blue-400 m-1 ' + emptyInputColor[UPH]}/>
 
         <div className='text-end flex items-center  justify-end pr-3'>Temps avant CPT</div>
-        <input defaultValue={timeBeforeFinish} ref={timeBeforeFinishRef} 
+        <input defaultValue={TBCPT} ref={timeBeforeFinishRef} 
         onChange={(e) => updateTBCPT(Number(e.target.value))}
-        type="number"className={`my-auto input input-xs border-blue-400 m-1 ` + emptyInputColor[timeBeforeFinish]}/>
+        type="number"className={`my-auto input input-xs border-blue-400 m-1 ` + emptyInputColor[TBCPT]}/>
 
     </div>
   )

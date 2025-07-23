@@ -10,11 +10,13 @@ export default defineConfig({
     monkey({
       entry: 'src/main.jsx',
       userscript: {
-        version: "0.4.0",
+        version: "0.5.0",
         author: "bmillion",
         icon: 'https://share.amazon.com/sites/bmillion/Shared%20Documents/Homy/lion-vector-illustration-outline-coloring.png',
         namespace: 'bmillion/packSingleUtility',
         match: ['https://share.amazon.com/sites/bmillion/Shared%20Documents/Homy/index.html'],
+        downloadURL: ['https://share.amazon.com/sites/bmillion/Shared%20Documents/Homy/Homy.user.js'],
+        updateURL: ['https://share.amazon.com/sites/bmillion/Shared%20Documents/Homy/Homy.user.js']
       },
       build: {
         externalGlobals: {

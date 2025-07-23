@@ -9,9 +9,12 @@
   <link rel="icon" type="image/png" href="https://share.amazon.com/sites/bmillion/Shared%20Documents/Homy/lion-vector-illustration-outline-coloring.png">
 </head>
 <script>
-
+window.addEventListener('focus', () => {
+  if (document.querySelector("div.h-screen")) return
+  window.location.reload()
+})
 </script>
 <body className="h-full bg-violet-400 animate-pulse">
-    
+    <a href="https://share.amazon.com/sites/bmillion/Shared%20Documents/Homy/Homy.user.js">Télécharger le script</a>
 </body>
 </html>

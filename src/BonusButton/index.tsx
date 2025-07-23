@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react'
 import { uzeStore } from '../store/uzeStore'
-import { uzeRodeo } from '../Header/uzeRodeo'
 import usePick from './usePick'
 import CapaTable from './CapaTable'
 import {GM_deleteValue} from '$'
+import GetThePlan from './nail-the-plan/card-plan'
 
-export default function index() {
+export default function BonusButton({data}) {
     
     const {renderPick} = usePick()
 
@@ -76,11 +76,16 @@ export default function index() {
       GM_deleteValue("Homy_capacityDetails")
     }
 
+    const handlePLAN = () => {
+      console.log(data)
+      updateIBC(<GetThePlan plan={data.plan}/>)
+    }
 
+ 
 
   return (
     <div className='grid grid-cols-2 grid-rows-3 h-full justify-evenly pt-3'>
-    <button className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={true}>PLAN</button>
+    <button onClick={handlePLAN} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={bonusDisabled}>PLAN</button>
     <button onClick={handlePDP} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={bonusDisabled}>PDP</button>
     <button onClick={handleCapa} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={bonusDisabled}>CAPA</button>
     <button onClick={handlePick} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={bonusDisabled}>PICK</button>

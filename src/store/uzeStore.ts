@@ -106,7 +106,7 @@ export const uzeStore = create<Store>(
   (set,get)=>({
   pageTime: 0,
   updatePageTime: (newTime) => set ({pageTime: newTime}),
-  environnement: 'developpement',
+  environnement: 'production',
   singleLaneMapping : {
     Ligne1: [107,108,109,110,111,112,113,114,115,116,117],
     Ligne2: [209,210,211,212,213,214,215,216],
@@ -126,11 +126,11 @@ export const uzeStore = create<Store>(
   updateHeadcount: (newCount) => {
     set({headcount: newCount})
   },
-  UPH: 140,
+  UPH: null,
   updateUPH: (newCount) => {
     set({UPH: newCount})
   },
-  TBCPT: 45,
+  TBCPT: null,
   updateTBCPT: (newCount) => {
     set({TBCPT: newCount})
   },
@@ -198,7 +198,7 @@ export const uzeStore = create<Store>(
   dataPickAge: null,
   dataCapa: null,
   dataCapaAge: null,
-  refresher: "done", // modify to loading to load at start
+  refresher: "loading", // modify to loading to load at start
   refresherCapa: "done", // modify to loading to load at start
   refresherPick: "done",
   updateRefresher: (status: string) => {

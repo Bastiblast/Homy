@@ -4,8 +4,11 @@ import { uzeStore } from './store/uzeStore';
 import InfoBox from './PackLine/InfoBox';
 import TotalHeadCount from './PackLine/TotalHeadCount';
 import BonusButton from './BonusButton/index'
-import { useEffect } from 'react';
+import React, { useEffect,useState } from 'react';
 import {GM_getValue,GM_setValue} from '$';
+import {singlePlanTemplate,getLastPlanSingle} from './BonusButton/nail-the-plan/get-lastSinglePlan'
+
+
 function App() {
   const updateRefresher = uzeStore(s => s.updateRefresher)
   const refresher = uzeStore(s => s.refresher)
@@ -14,6 +17,8 @@ function App() {
 
   const pageTime = uzeStore(s => s.pageTime)
   const updatePageTime = uzeStore(s => s.updatePageTime)
+
+  const [plan,setPlan] = useState<typeof singlePlanTemplate[0] | null>(null)
 
 const refreshHandle = () => {
   updateRefresher("loading")
@@ -24,7 +29,12 @@ useEffect(() => {
 
   const timer = setInterval(() => {
     updatePageTime(stamp)
-    //console.log("timer")
+    getLastPlanSingle().then(newPlan => setPlan(
+      {...plan, 
+        data: newPlan[0],
+        stamp: Date.now(),
+      }))
+
   },10000)
   return () => clearInterval(timer)
 })
@@ -45,6 +55,18 @@ useEffect(() => {
     updatePickRefresher("loading")
 },[])
 
+useEffect(() => {
+  const timer = setInterval(() => {
+    getLastPlanSingle().then(newPlan => {
+      setPlan({...plan, 
+        data: newPlan[0],
+        stamp: Date.now(),
+      })})
+  },30000)
+  return () => clearInterval(timer)
+})
+
+    
   return (
     <div className="App h-full bg-gradient-to-b from-white to-violet-500 p-4">
 
@@ -54,12 +76,12 @@ useEffect(() => {
           <TotalHeadCount />
           <div className='flex flex-row'>
 
-          <MultiSelectorBtn />
+          <MultiSelectorBtn/>
 
           {refresher === "loading" ? <button className='btn text-white mx-2 w-20' disabled><span className=' loading loading-spinner loading-xl'></span></button> : <button className='btn mx-2 w-20' onClick={refreshHandle}>Refresh</button>}
           </div>
         </div>
-        <BonusButton />
+        <BonusButton  data={{plan}}  />
         <InfoBox />
       </header>
 
