@@ -30,7 +30,7 @@ export default function BonusButton({data}) {
     const isOutDated = (stamp,sec) => {
       if (!stamp || !sec) return  
       const isOutDated = !((pageTime - sec) / 1000) < sec 
-      //console.log(new Date(stamp).toLocaleTimeString("fr-FR")," is out dated ? ",isOutDated)
+      console.log(new Date(stamp).toLocaleTimeString("fr-FR")," is out dated ? ",isOutDated)
       return isOutDated
     }
 
@@ -59,15 +59,14 @@ export default function BonusButton({data}) {
 
     const handleCapa = async () => {
 
-      if (dataCapaAge && isOutDated(dataCapaAge,180) && dataCapa.size > 0) {
-        //console.log("Capacity data is out dated ? ",isOutDated(dataCapaAge,180))
+      if (!isOutDated(dataCapaAge,180)) {
+        console.log("Capacity data is out dated ? ",isOutDated(dataCapaAge,180))
         updateIBC(<CapaTable data={dataCapa} />)}
       else {
-        //console.log("Capacity data fetching...")
+        console.log("Capacity data fetching...")
         
       updateIBC("Loading...")
       updateCapaRefresher("loading")
-      await getRodeoCapa()
     }
     }
 
@@ -77,7 +76,7 @@ export default function BonusButton({data}) {
     }
 
     const handlePLAN = () => {
-      console.log(data)
+      console.log("data",data)
       updateIBC(<GetThePlan plan={data.plan}/>)
     }
 

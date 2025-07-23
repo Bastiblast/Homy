@@ -57,7 +57,6 @@ export default function PackLine() {
 
             let renderUnits, railUnit, wsUnit,stationUnits,stationCPT,wsCPT,nextCPT,remaingTime,timeToFinish,stationColor,potentiel
             if (dataTotal) {
-              console.log({dataTotal})
               railUnit = dataTotal[`dz-P-OB-Single-cvg-${poste}`]?.total
               wsUnit = dataTotal[`ws_Singles_0${poste}`]?.total
               stationUnits = railUnit && wsUnit ? railUnit + wsUnit : railUnit ? railUnit : wsUnit

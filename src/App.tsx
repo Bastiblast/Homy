@@ -24,16 +24,21 @@ const refreshHandle = () => {
   updateRefresher("loading")
 }
 
+const updatePlan = () => {
+      getLastPlanSingle().then(newPlan => setPlan(
+      {...plan, 
+        data: newPlan[0],
+        stamp: Date.now(),
+        update: updatePlan
+      }))
+}
+
 useEffect(() => {
   const stamp = Date.now()
 
   const timer = setInterval(() => {
     updatePageTime(stamp)
-    getLastPlanSingle().then(newPlan => setPlan(
-      {...plan, 
-        data: newPlan[0],
-        stamp: Date.now(),
-      }))
+    updatePlan()
 
   },10000)
   return () => clearInterval(timer)

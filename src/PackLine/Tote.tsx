@@ -84,7 +84,6 @@ export default function RenderPoste({dropzone,inductPrio}) {
     if (activeTote === "bg-red-500"  || !dataTotal) return
     const isInductPrio = dataTotal[dropzone][totes].NextCPT === nextCPT && potentiel < 0
     isInductPrio === true ? activeTote = "bg-red-500" : activeTote = "bg-blue-500"
-    console.log("isInductPrio",totes,prioCPT,' = ',nextCPT,prioCPT === nextCPT," & ",potentiel, "< 0 ?",isInductPrio,activeTote)
      }
 
    return (
