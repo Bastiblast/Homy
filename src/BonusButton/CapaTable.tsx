@@ -1,7 +1,7 @@
 import { useEffect, useRef} from 'react'
 import { uzeStore } from '../store/uzeStore'
 import {GM} from '$'
-import ActivityDetails from './activityDetails'
+import ActivityDetails from '.././activityDetails'
 
 export default function CapaTable(data) {
 
@@ -125,7 +125,7 @@ export default function CapaTable(data) {
             return <>
 
                     <div key={index} className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{header}</div>
-                    <div key={index +1} className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{btNumber}{index > 0 && "-"+allBtNumber}</div>
+                    <div key={index +1} className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{allBtNumber}</div>
                     <div key={index+2} className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{index === 0 ?unitNumber:allUnitNumber}</div>
                     <div key={index+3} className={'border-b-2 justify-center border-r-2 flex items-center '+colorRisk}>{deadLineTime}min</div>
                     <div key={index+4} className={'border-b-2 justify-center flex items-center '+colorRisk}>{packerNeeded}</div>
@@ -137,29 +137,18 @@ export default function CapaTable(data) {
 
 
   return (
-    <div className='flex flex-row h-full w-full items-center bg-violet-100'>
+    <div className='flex flex-row h-full w-full items-center justify-center bg-violet-100'>
         <div className='grid grid-flow-row grid-cols-5 border-4 p-2 border-violet-100 bg-white'>
             
 
             <div className='text-center px-4 border-r-2 font-bold border-b-2 h-8'>CPT</div>
-            <div className='text-xs text-center px-4 border-r-2 font-bold border-b-2 h-8 w-full'>
-                BT
-                <div className='flex justify-between'>
+              
+            <div className='text-center px-4 border-r-2 font-bold border-b-2 h-8'>  BT Prio</div>
 
-                <span className='text-xs'>Prio</span>
-                <span className='text-xs'>Sum</span>
-                </div>
                 
-            </div>
-            <div className='text-xs text-center px-4 border-r-2 font-bold border-b-2 h-8 w-full'>
-                Units
-                <div className='flex justify-between'>
-
-                <span className='text-xs'>Prio</span>
-                <span className='text-xs'>Sum</span>
-                </div>
-                
-            </div>
+ 
+            <div className='text-center px-4 border-r-2 font-bold border-b-2 h-8'>Units Prio</div>
+              
             <div className='text-center px-4 border-r-2 font-bold border-b-2 h-8'>Remain</div>
             <div className='text-center px-4 font-bold border-b-2 h-8'>Attendu</div>
         
@@ -169,8 +158,6 @@ export default function CapaTable(data) {
            {noDataWarning || noPackerWarning}
            
         </div>
-
-        <ActivityDetails />
 
     </div>
   )

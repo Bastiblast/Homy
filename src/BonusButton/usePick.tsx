@@ -6,7 +6,7 @@ export default function Pick() {
 
         if (!dataPick) return
 
-        console.log("Starting rendering pick with ",dataPick)
+       // console.log("Starting rendering pick with ",dataPick)
         
           const headers = dataPick.map((row,index) => {
             if (index > 5) return
@@ -35,7 +35,7 @@ export default function Pick() {
           </tbody>
       </table>
 
-          console.log("renderring pick return ",<Table />)
+         // console.log("renderring pick return ",<Table />)
           return <Table />
 
       }

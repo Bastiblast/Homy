@@ -1,11 +1,11 @@
-import { useEffect } from 'react'
-import {uzeCPTSelection} from '../Header/uzeSelectedCPT'
-import { uzeStore } from '../store/uzeStore'
+import { useEffect, useRef } from 'react'
+import {uzeStore} from '../store/uzeStore'
 import RenderTote from './Tote'
 import RenderBuffer from './Buffer'
 import HeadCount from './HeadCount'
 import AssociateInput from './AssociateInput'
 import searchOnRodeo from './onRodeoSearch'
+import fetchRodeoIco from '../BonusButton/fetch-rodeo-ico'
 
 export default function PackLine() {
 
@@ -20,7 +20,8 @@ export default function PackLine() {
       getRodeoData()
     }, [])
     
-    const day = uzeCPTSelection(s => s.day)
+    const ico = useRef(null)
+    const day = uzeStore(s => s.day)
     const infoBoxRef = uzeStore(s => s.infoBoxRef)
     const pageTime = uzeStore(s => s.pageTime)
     const headcount = uzeStore(s => s.headcount)
@@ -31,6 +32,8 @@ export default function PackLine() {
     const valuesArray = Object.values(headcount)
     
     const newTotalHeadCount = valuesArray.reduce((acc,val) => acc + val.size,0)
+
+    const fullInfo = uzeStore(s => s.fullInfo)
 
     useEffect(() => {
       updateTotalHeadCount(newTotalHeadCount)
@@ -81,10 +84,16 @@ export default function PackLine() {
               <div className={stationColor} key={"L1" + "-" + poste}>
               <div className='flex flex-row w-full items-center'>
 
+                <div className='relative'>
+                  
                 <span className='p-2 bg-lime-400 rounded-md'
-                onClick={() => searchOnRodeo(stationSearchParams)}>{String(poste)}</span>
+                
+                  >{String(poste)}</span>
+                {renderUnits && <img 
+                onClick={() => searchOnRodeo(stationSearchParams)}
+                className='absolute w-4 h-1/2 -top-1 right-0 z-10 transition-all hover:scale-150 hover:-translate-x-1 hover:translate-y-1' ref={ico} src='https://rodeo-dub.amazon.com/resources/images/rodeo-favicon.gif'></img>}
+                  </div>
                 <div className='flex flex-row'>
-
                 <AssociateInput poste={poste} />
                 </div>
                 
@@ -97,7 +106,7 @@ export default function PackLine() {
                 </div>
               </div>
               <div className='w-12'>
-              {environnement === 'developpement' && renderUnits && renderUnits + "/u"} {environnement === 'developpement' && timeToFinish && (timeToFinish * 60).toFixed(0)  + "/m"}            
+              {fullInfo && renderUnits && renderUnits !== 0 && renderUnits + "/u"} {fullInfo && timeToFinish !== 0 && (timeToFinish * 60).toFixed(0)  + "/m"}            
 
               </div>
             </div>

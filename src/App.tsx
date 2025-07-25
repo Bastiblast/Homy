@@ -7,9 +7,13 @@ import BonusButton from './BonusButton/index'
 import React, { useEffect,useState } from 'react';
 import {GM_getValue,GM_setValue} from '$';
 import {singlePlanTemplate,getLastPlanSingle} from './BonusButton/nail-the-plan/get-lastSinglePlan'
+import ActivityDetails from './activityDetails';
 
 
 function App() {
+  const totalHeadCount = uzeStore(s => s.totalHeadCount)
+  const updateTotalHeadCount = uzeStore(s => s.updateTotalHeadCount)
+
   const updateRefresher = uzeStore(s => s.updateRefresher)
   const refresher = uzeStore(s => s.refresher)
   const updateCapacityDetails = uzeStore(s => s.updateCapacityDetails)
@@ -25,12 +29,24 @@ const refreshHandle = () => {
 }
 
 const updatePlan = () => {
-      getLastPlanSingle().then(newPlan => setPlan(
-      {...plan, 
-        data: newPlan[0],
+  //console.log({plan})
+  if (plan && (Date.now() - plan.stamp < 30000)) {
+    //console.log("fresh data return")
+    return} else {
+      //console.log("getting new data")
+      getLastPlanSingle().then(newPlan => {setPlan(
+        {...plan, 
+          data: newPlan[0],
         stamp: Date.now(),
         update: updatePlan
-      }))
+      }
+    )
+    if (totalHeadCount === 0) {
+      updateTotalHeadCount(newPlan[0].planned_hc)
+    }
+  }
+)
+}
 }
 
 useEffect(() => {
@@ -42,10 +58,18 @@ useEffect(() => {
 
   },10000)
   return () => clearInterval(timer)
-})
+},[pageTime])
 
 useEffect(() => {
-  console.log({pageTime})
+  const timer = setInterval(() => {
+
+    updateRefresher("loading")
+  },45000)
+  return () => clearInterval(timer)
+},[])
+
+useEffect(() => {
+  //console.log({pageTime})
     if (pageTime) return
     const storedValue = GM_getValue("Homy_capacityDetails")
     const initValue = storedValue ? JSON.parse(storedValue) : {
@@ -87,6 +111,10 @@ useEffect(() => {
           </div>
         </div>
         <BonusButton  data={{plan}}  />
+        <div>
+
+        <ActivityDetails />
+        </div>
         <InfoBox />
       </header>
 

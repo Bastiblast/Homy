@@ -15,7 +15,7 @@ const renderInfoBox = () => {
 }
 
   return (
-    <div className='flex flex-col bg-white w-2/5 h-36 shadow shadow-md'>
+    <div className='flex flex-col bg-white w-2/5 shadow shadow-md'>
       <span className='flex justify-center w-full bg-violet-100 font-bold'>InfoBox</span>
       
         {renderInfoBox()}

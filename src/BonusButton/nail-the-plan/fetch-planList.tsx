@@ -34,13 +34,13 @@ export default async function fetchPlanList (): Promise<typeof planListTemplate>
         const json: planList = JSON.parse(query)
         const dataValidation = typeof json === typeof planListTemplate
         if (dataValidation) {
-            console.log("data receive accepted",dataValidation)
+           // console.log("data receive accepted",dataValidation)
             return json
         } else {
             throw new Error("fetchPlanList receive wrong datas.")
         }
     } catch(error) {
-        console.error("fetchPlanList get wrong data...")
+        //console.error("fetchPlanList get wrong data...")
     }
 }
 

@@ -10,7 +10,7 @@ export default defineConfig({
     monkey({
       entry: 'src/main.jsx',
       userscript: {
-        version: "0.5.0",
+        version: "0.6.0",
         author: "bmillion",
         icon: 'https://share.amazon.com/sites/bmillion/Shared%20Documents/Homy/lion-vector-illustration-outline-coloring.png',
         namespace: 'bmillion/packSingleUtility',

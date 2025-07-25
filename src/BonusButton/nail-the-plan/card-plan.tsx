@@ -1,6 +1,3 @@
-import { useEffect, useState } from 'react'
-import getLastPlanSingle, { singlePlanTemplate } from './get-lastSinglePlan'
-
 export default function GetThePlan({plan}) {
 
 
@@ -14,6 +11,8 @@ export default function GetThePlan({plan}) {
     const dateHour =  date.getHours()
     const localDate = date.setHours(dateHour - 2)
     const stringDate = new Date(localDate).toLocaleTimeString()
+
+     
 
     console.log({date},{dateHour},{localDate},{stringDate})
 

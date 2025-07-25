@@ -7,6 +7,7 @@ import {staticRodeoDatas} from '../shipmentItemList'
 import {staticPickDatas} from '../pickSumList'
 import csv from 'csvtojson'
 import { capaRodeoStatic } from '../capaRodeo';
+import Loader from './loader-component';
 
 const urlCSVrodeo = `https://rodeo-dub.amazon.com/MRS1/ItemListCSV?_enabledColumns=on&WorkPool=PickingPickedAtDestination&enabledColumns=ASIN_TITLES&enabledColumns=DEMAND_ID&enabledColumns=OUTER_SCANNABLE_ID&enabledColumns=SORT_CODE&Excel=false&Fracs=NON_FRACS&ProcessPath=PPSingleMedium&shipmentType=CUSTOMER_SHIPMENTS`
 
@@ -56,6 +57,12 @@ interface CapacityDetails {
     ligne4: Map<string, string> ;
   }
 interface Store {
+    fullInfo: boolean,
+  updateFullInfo: (Boolean) => void,
+    CPTlist : string[];
+  updateCPTTracking : (val : any) => void;
+  day: string;
+  updateDay: (date: string) => void;
   pageTime : number;
   updatePageTime : (newTime: number) => void;
   singleLaneMapping : any;
@@ -68,6 +75,12 @@ interface Store {
   totalHeadCount: null | number,
   updateTotalHeadCount: (number) => void,
   updateHeadcount: (newCount: headcount) => void;
+  UPH: number;
+  updateUPH: (number: number) => void ;
+  TBCPT: number;
+  updateTBCPT: (number: number) => void ;
+  timeToNextCPT: number;
+  updateTimeToNextCPT: (number: number) => void;
   capacityDetails: null | CapacityDetails;
   updateCapacityDetails: (CapacityDetails) => void;
   infoBoxContent: null | ReactNode;
@@ -104,6 +117,35 @@ const PDPurl = "https://share.amazon.com/sites/MRS1-PDP/Documents%20partages/MRS
 
 export const uzeStore = create<Store>(
   (set,get)=>({
+      CPTlist : [],
+  updateCPTTracking : (event: React.MouseEvent<HTMLButtonElement>) => {
+    
+    const actualList = get().CPTlist
+    let newArray
+    const clickElement = event.target as HTMLButtonElement
+    const clickContent: string = clickElement.dataset.time || ""
+    //console.log("updateCPTTracking",clickContent)
+    if (actualList.includes(clickContent)){
+        newArray = actualList.filter(val => val !== clickContent)
+    } else {
+        newArray = [...actualList,clickContent]
+    }
+
+    const CPTArray = [...newArray].sort()
+    //console.log({CPTArray})
+    const timeBeforeNextCPT = (new Date(CPTArray[0]) - Date.now())/ 60 / 60 / 1000
+
+    set(({ CPTlist : newArray, timeToNextCPT: timeBeforeNextCPT }) )},
+    day: "",
+    updateDay: (date: string) => {
+      let [month,day] = date.split("-")
+      month = "0" + month
+      month = month.slice(0,2)
+      day = "0" + day
+      day = day.slice(0,2)
+      const newDate = `${month}-${day}`
+      set({day: newDate})
+    },
   pageTime: 0,
   updatePageTime: (newTime) => set ({pageTime: newTime}),
   environnement: 'production',
@@ -126,14 +168,16 @@ export const uzeStore = create<Store>(
   updateHeadcount: (newCount) => {
     set({headcount: newCount})
   },
-  UPH: null,
+  UPH: 0,
   updateUPH: (newCount) => {
     set({UPH: newCount})
   },
-  TBCPT: null,
+  TBCPT: 0,
   updateTBCPT: (newCount) => {
     set({TBCPT: newCount})
   },
+  timeToNextCPT: 0,
+  updateTimeToNextCPT: (number) => set({timeToNextCPT: number}),
   infoBoxContent: null,
   infoBoxRef: null,
   capacityDetails: null,
@@ -179,7 +223,8 @@ export const uzeStore = create<Store>(
         })
         //console.log({packSinglePDP})
         get().updateIBC("shift")
-        set( ({ PDPdata : packSinglePDP }) )      
+
+        set( ({ PDPdata : packSinglePDP, totalHeadCount: packSinglePDP.length }) )      
       },
     })
       break
@@ -190,6 +235,8 @@ export const uzeStore = create<Store>(
 
   data: null,
   dataTotal: null,
+  fullInfo: false,
+  updateFullInfo: (Boolean) => set({fullInfo: Boolean}),
   updateDataTotal: (newData: BuildJSON) => {
     set({dataTotal: newData})
   } ,
@@ -249,7 +296,7 @@ return
       })
         .then(resp => csv().fromString(resp.responseText))
         .then(array => {
-          console.log("getting rodeo CSV",array)
+          //console.log("getting rodeo CSV",array)
           return array})
     })
   
@@ -257,15 +304,15 @@ return
 
     const [pickingArray,pickedArray] = await Promise.all(promises)
     
-    console.log(pickingArray.length,pickedArray.length)
+    //console.log(pickingArray.length,pickedArray.length)
 
     if (pickingArray.length === 0 && pickedArray.length === 0) {
-      console.log("cancelling")
+      //console.log("cancelling")
       get().updateCapaRefresher(get().refresherCapa + ".")
-      get().updateIBC("Rodeo query")
+      get().updateIBC(<Loader>En attente de rodeo   </Loader>)
       return
     }
-      get().updateIBC("Building Tab")
+      get().updateIBC(<Loader>Building Tab   </Loader>)
 
     //console.log("getCap response ",promises,pickedArray,pickedArray)
     const mappingCPTpicking = new Map()
@@ -294,6 +341,8 @@ return
 
     prioTote.forEach(tote => inTransitTote.get(tote) && prioTote.delete(tote))
 
+      get().updateIBC(<Loader>Query some more information   </Loader>)
+
     const prioToteDetailPromise = await [...prioTote].map(tote => {
       const urlByTote = `https://rodeo-dub.amazon.com/MRS1/SearchCSV?_enabledColumns=on&enabledColumns=ASIN_TITLES&enabledColumns=OUTER_SCANNABLE_ID&Excel=false&searchKey=${tote}&shipmentType=CUSTOMER_SHIPMENTS`
       const response = GM.xmlHttpRequest({method: "GET",url:urlByTote})
@@ -309,6 +358,7 @@ return
     //console.log("getRodeoData prioToteDetailFetched",prioToteDetailFetched)
     //console.log("getRodeoData inTransitTote",inTransitTote)
 
+      get().updateIBC(<Loader>Almost done   </Loader>)
 
 
     const mergeToteDetail = [...prioToteDetailFetched,...[...inTransitTote].map(entries => {return {tote:entries[0],shipments:entries[1]}})]
@@ -359,7 +409,7 @@ return
   //console.log("getRodeoData merge + picked",mappingCPTpicked)
 
 
-  console.log("getRodeoData mergedPickingAndPickedArray ",mergedPickingAndPickedArray)
+  //console.log("getRodeoData mergedPickingAndPickedArray ",mergedPickingAndPickedArray)
 
   set({dataCapa:mergedPickingAndPickedArray,refresherCapa:"done",dataCapaAge:get().pageTime})
 
@@ -439,7 +489,9 @@ return
     
     const CPTArray = [...CPTMap].sort()
     //console.log({CPTArray})
-    set({dataPick: CPTArray.slice(0,6)})
+    const timeBeforeNextCPT = (new Date(CPTArray[0][0]) - Date.now())/ 60 / 60 / 1000
+    //console.log({timeBeforeNextCPT} )
+    set({dataPick: CPTArray.slice(0,6),timeToNextCPT: timeBeforeNextCPT})
 
     
 

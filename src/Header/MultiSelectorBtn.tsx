@@ -1,4 +1,3 @@
-import {uzeCPTSelection} from './uzeSelectedCPT'
 import { uzeStore } from '../store/uzeStore'
 
 
@@ -14,8 +13,8 @@ const CPTtemplate = []
   return [regexe[0],cpt[0]]
   }) : CPTtemplate
 
-    const CPTlist = uzeCPTSelection(s => s.CPTlist)
-    const updateCPTTracking = uzeCPTSelection(s => s.updateCPTTracking)
+    const CPTlist = uzeStore(s => s.CPTlist)
+    const updateCPTTracking = uzeStore(s => s.updateCPTTracking)
 
     const handleClick = (event: MouseEvent) => {
         updateCPTTracking(event)

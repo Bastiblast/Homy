@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { uzeStore } from '../store/uzeStore'
+import { uzeStore } from './store/uzeStore'
 import {GM} from '$'
 
 export default function ActivityDetails() {
@@ -43,14 +43,16 @@ export default function ActivityDetails() {
     useEffect(() => {
         if (!UPH || !TBCPT) return
 
-        updateCapacityDetails({
+        const newDetails = {
             dataTime: Date.now(),
             userPreference: {
               UPH: UPH,
               TBCPT: TBCPT,
             }
           
-          })
+          }
+          console.log({newDetails})
+        updateCapacityDetails(newDetails)
   
     }, [UPH,TBCPT])
     
@@ -64,20 +66,22 @@ export default function ActivityDetails() {
     } 
 
   return (        
-    <div className='grid grid-flow-row grid-cols-2  border-4 px-2 border-violet-100 bg-white h-full'>
+    <div className='grid grid-flow-row grid-cols-2 border-4 px-2 border-violet-100 bg-white h-full'>
 
+        <h2 className='text-xl font-bold col-span-2'>Activity details</h2>
+        <span className='text-xs col-span-2'>Information pour les calcules de capacité et de priorisation des bacs.</span>
         <span className={`flex justify-end items-center pr-3`}>headcount</span>
-        <input defaultValue={String(customHC)} ref={headcountRef} 
+        <input value={String(totalHeadCount)} ref={headcountRef} 
         onChange={(e) => updateTotalHeadCount(Number(e.target.value))}
         type="number"className={`my-auto input input-xs border-blue-400 m-1 ` + emptyInputColor[totalHeadCount ?? 0]} />
 
         <div className={'flex justify-end items-center pr-3'}>UPH</div>
-        <input defaultValue={UPH} ref={UPHRef} type="number" 
+        <input value={UPH} ref={UPHRef} type="number" 
         onChange={(e) => updateUPH(Number(e.target.value))}
         className={'my-auto input input-xs border-blue-400 m-1 ' + emptyInputColor[UPH]}/>
 
         <div className='text-end flex items-center  justify-end pr-3'>Temps avant CPT</div>
-        <input defaultValue={TBCPT} ref={timeBeforeFinishRef} 
+        <input value={TBCPT} ref={timeBeforeFinishRef} 
         onChange={(e) => updateTBCPT(Number(e.target.value))}
         type="number"className={`my-auto input input-xs border-blue-400 m-1 ` + emptyInputColor[TBCPT]}/>
 

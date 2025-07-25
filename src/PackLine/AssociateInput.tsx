@@ -41,13 +41,13 @@ export default function AssociateInput({poste}) {
 
     const placeHolder = useMemo(
       () => {
-        handleHC
+        
         return getValue(PDPFiltereddata)},
       [PDPFiltereddata]
     );
 
   return (
-    <input onChange={handleHC} onKeyUp={handleHC} defaultValue={placeHolder} className="w-24 h-8 bg-white p-2" type="text" name={poste} id="" />
+    <input onKeyUp={handleHC} defaultValue={placeHolder} className="w-24 h-8 bg-white p-2" type="text" name={poste} id="" />
 
   )
 }

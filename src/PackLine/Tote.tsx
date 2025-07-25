@@ -1,4 +1,4 @@
-import { uzeCPTSelection } from '../Header/uzeSelectedCPT'
+
 import { uzeStore } from '../store/uzeStore'
 
 export default function RenderPoste({dropzone,inductPrio}) {
@@ -7,7 +7,7 @@ export default function RenderPoste({dropzone,inductPrio}) {
     const updateDataTotal = uzeStore(s => s.updateDataTotal)
     const updateIBC = uzeStore(s => s.updateIBC)
     const dataTotal = uzeStore(s => s.dataTotal)
-    const CPTlist = uzeCPTSelection(s => s.CPTlist)
+    const CPTlist = uzeStore(s => s.CPTlist)
 
     const {prioCPT,potentiel} = inductPrio
 

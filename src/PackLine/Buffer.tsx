@@ -1,12 +1,11 @@
 import React from 'react'
 import { uzeStore } from '../store/uzeStore'
-import { uzeCPTSelection } from '../Header/uzeSelectedCPT'
 
 export default function Buffer({dz}) {
 
     const data = uzeStore(s => s.data)
-    const CPTlist = uzeCPTSelection(s => s.CPTlist)
-    const day = uzeCPTSelection(s => s.day)
+    const CPTlist = uzeStore(s => s.CPTlist)
+    const day = uzeStore(s => s.day)
 
     if (!data || !data[dz]) return
 
