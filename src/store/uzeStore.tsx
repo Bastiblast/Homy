@@ -146,9 +146,9 @@ export const uzeStore = create<Store>(
       const newDate = `${month}-${day}`
       set({day: newDate})
     },
-  pageTime: 0,
-  updatePageTime: (newTime) => set ({pageTime: newTime}),
-  environnement: 'production',
+    updatePageTime: (newTime) => set ({pageTime: newTime}),
+    environnement: 'developpement',
+    pageTime: () => get().environnement === "developpement" ? 1753780800000 : 0,
   singleLaneMapping : {
     Ligne1: [107,108,109,110,111,112,113,114,115,116,117],
     Ligne2: [209,210,211,212,213,214,215,216],
@@ -263,7 +263,18 @@ updatePickRefresher: (status: string) => {
   getRodeoCapa: async () => {
     if (get().refresherCapa === "done") return
     if (get().environnement === "developpement") {
-  set({dataCapa:capaRodeoStatic,refresherCapa:"done",dataCapaAge:get().pageTime})
+      console.log("getRodeoCapa",capaRodeoStatic)
+      const object = get().dataPick
+      const newCapa = new Map(Array.from(capaRodeoStatic.entries()).map((value,index) => {
+        console.log({value})
+
+        const newDate = object[index][0]
+        console.log({newDate}, Date.parse(newDate))
+        return [newDate,value[1]]
+      }))
+      console.log({newCapa})
+  set({dataCapa:newCapa,refresherCapa:"done",dataCapaAge:get().pageTime})
+
 return
     }
     const stamp = get().pageTime

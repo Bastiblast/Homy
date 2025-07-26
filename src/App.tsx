@@ -22,22 +22,24 @@ function App() {
   const pageTime = uzeStore(s => s.pageTime)
   const updatePageTime = uzeStore(s => s.updatePageTime)
 
+  const environnement = uzeStore(s =>s.environnement)
   const [plan,setPlan] = useState<typeof singlePlanTemplate[0] | null>(null)
 
 const refreshHandle = () => {
   updateRefresher("loading")
 }
+            
 
 const updatePlan = () => {
   //console.log({plan})
-  if (plan && (Date.now() - plan.stamp < 30000)) {
+  if (plan && (environnement === "developpement" ? pageTime : Date.now() - plan.stamp < 30000)) {
     //console.log("fresh data return")
     return} else {
       //console.log("getting new data")
-      getLastPlanSingle().then(newPlan => {setPlan(
+      getLastPlanSingle(environnement).then(newPlan => {setPlan(
         {...plan, 
           data: newPlan[0],
-        stamp: Date.now(),
+        stamp: environnement === "developpement" ? pageTime + 50000 : Date.now(),
         update: updatePlan
       }
     )
@@ -50,7 +52,7 @@ const updatePlan = () => {
 }
 
 useEffect(() => {
-  const stamp = Date.now()
+  const stamp = environnement === "developpement" ? pageTime + 50000 : Date.now()
 
   const timer = setInterval(() => {
     updatePageTime(stamp)
@@ -86,10 +88,10 @@ useEffect(() => {
 
 useEffect(() => {
   const timer = setInterval(() => {
-    getLastPlanSingle().then(newPlan => {
+    getLastPlanSingle(environnement).then(newPlan => {
       setPlan({...plan, 
         data: newPlan[0],
-        stamp: Date.now(),
+        stamp: environnement === "developpement" ? pageTime + 50000 : Date.now(),
       })})
   },30000)
   return () => clearInterval(timer)
@@ -97,17 +99,17 @@ useEffect(() => {
 
     
   return (
-    <div className="App h-full bg-gradient-to-b from-white to-violet-500 p-4">
+    <div className="bg-gradient-to-b from-white to-violet-500 p-4 h-full App">
 
       <header className='flex justify-between p-2'>
         <div className='flex flex-col justify-between'>
-          <h1 className='text-5xl py-3 font-bold'>Pack Single Tracker</h1>
+          <h1 className='py-3 font-bold text-5xl'>Pack Single Tracker</h1>
           <TotalHeadCount />
           <div className='flex flex-row'>
 
           <MultiSelectorBtn/>
 
-          {refresher === "loading" ? <button className='btn text-white mx-2 w-20' disabled><span className=' loading loading-spinner loading-xl'></span></button> : <button className='btn mx-2 w-20' onClick={refreshHandle}>Refresh</button>}
+          {refresher === "loading" ? <button className='mx-2 w-20 text-white btn' disabled><span className='loading loading-spinner loading-xl'></span></button> : <button className='mx-2 w-20 btn' onClick={refreshHandle}>Refresh</button>}
           </div>
         </div>
         <BonusButton  data={{plan}}  />

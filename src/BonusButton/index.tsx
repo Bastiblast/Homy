@@ -31,9 +31,13 @@ export default function BonusButton({data}) {
     const fullInfo = uzeStore(s => s.fullInfo)
     const updateFullInfo = uzeStore(s => s.updateFullInfo)
 
+
+        const environnement = uzeStore(s => s.environnement)
+        const pageTime = uzeStore(s => s.pageTime)
+
     const isOutDated = (stamp,sec) => {
       if (!stamp || !sec) return  
-      const isOutDated = !((Date.now() - sec) / 1000) < sec 
+      const isOutDated = !((environnement === "developpement" ? pageTime : Date.now() - sec) / 1000) < sec 
       console.log(new Date(stamp).toLocaleTimeString("fr-FR")," is out dated ? ",isOutDated)
       return isOutDated
     }
@@ -95,13 +99,13 @@ export default function BonusButton({data}) {
  
 
   return (
-    <div className='grid grid-cols-2 grid-rows-3 h-full justify-evenly pt-3'>
-    <button onClick={handlePLAN} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={bonusDisabled}>PLAN</button>
-    <button onClick={handlePDP} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={bonusDisabled}>PDP</button>
-    <button onClick={handleCapa} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={bonusDisabled}>PRIO</button>
-    <button onClick={handlePick} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={bonusDisabled}>PICK</button>
-    <button onClick={handleWash} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={bonusDisabled}>WASH</button>
-    <button onClick={handleInfo} className='btn m-1 rounded-none bg-red-400 shadow-md w-16' disabled={bonusDisabled}>INFO</button>
+    <div className='justify-evenly grid grid-cols-2 grid-rows-3 pt-3 h-full'>
+    <button onClick={handlePLAN} className='bg-red-400 shadow-md m-1 rounded-none w-16 btn' disabled={bonusDisabled}>PLAN</button>
+    <button onClick={handlePDP} className='bg-red-400 shadow-md m-1 rounded-none w-16 btn' disabled={bonusDisabled}>PDP</button>
+    <button onClick={handleCapa} className='bg-red-400 shadow-md m-1 rounded-none w-16 btn' disabled={bonusDisabled}>PRIO</button>
+    <button onClick={handlePick} className='bg-red-400 shadow-md m-1 rounded-none w-16 btn' disabled={bonusDisabled}>PICK</button>
+    <button onClick={handleWash} className='bg-red-400 shadow-md m-1 rounded-none w-16 btn' disabled={bonusDisabled}>WASH</button>
+    <button onClick={handleInfo} className='bg-red-400 shadow-md m-1 rounded-none w-16 btn' disabled={bonusDisabled}>INFO</button>
   </div>
   )
 }

@@ -14,7 +14,7 @@ export default defineConfig({
         author: "bmillion",
         icon: 'https://share.amazon.com/sites/bmillion/Shared%20Documents/Homy/lion-vector-illustration-outline-coloring.png',
         namespace: 'bmillion/packSingleUtility',
-        match: ['https://share.amazon.com/sites/bmillion/Shared%20Documents/Homy/index.html'],
+        match: ['https://share.amazon.com/sites/bmillion/Shared%20Documents/Homy/index.html','https://bastiblast.github.io/monkeyWhiteBoard/'],
         downloadURL: ['https://share.amazon.com/sites/bmillion/Shared%20Documents/Homy/Homy.user.js'],
         updateURL: ['https://share.amazon.com/sites/bmillion/Shared%20Documents/Homy/Homy.user.js']
       },

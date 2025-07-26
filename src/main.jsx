@@ -8,7 +8,7 @@ ReactDOM.createRoot(
     const app = document.createElement('div');
     app.className = "h-screen"
     document.body.prepend(app);
-    document.body.querySelector("a").style.display = "none"
+    document.body.querySelector("a") ? document.body.querySelector("a").style.display = "none" : null
     return app;
   })(),
 ).render(

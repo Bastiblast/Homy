@@ -10,9 +10,9 @@ export default function CardWash() {
     const totalHeadCount = uzeStore(s => s.totalHeadCount)
     const timeToNextCPT = uzeStore(s => s.timeToNextCPT)
     const [plan,setPlan] = useState(null)
-    
+    const environnement = uzeStore(s => s.environnement)
     useEffect(() => {
-        getLastPlanSingle().then(plan => setPlan(plan[0]))
+        getLastPlanSingle(environnement).then(plan => setPlan(plan[0]))
         console.log({plan})
     },[]) 
 
@@ -34,7 +34,7 @@ export default function CardWash() {
     }
 
   return (
-    <div className='flex flex-col items-center justify-center align-middle h-full'>
+    <div className='flex flex-col justify-center items-center h-full align-middle'>
         {!totalHeadCount ? <span>Indiquer le nombre de packer pour lancer le calcule.</span> : 
         !totalUnits() ? <Loader>Getting time</Loader> : 
         !UPH ? <span>pas d'uph</span> : 

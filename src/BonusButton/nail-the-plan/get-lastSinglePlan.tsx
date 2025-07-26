@@ -2,11 +2,19 @@ import fetchPlanList from './fetch-planList'
 import fetchThePlan from './fetch-thePlan'
 import getLastPlan from './get-lastPlan'
 
-export async function getLastPlanSingle(): Promise<typeof singlePlanTemplate> {
+export async function getLastPlanSingle(env): Promise<typeof singlePlanTemplate> {
 
-    const lastPlan = await getLastPlan()
-    const singlePlan = lastPlan.filter(process => process['pack_station'] ==="G4: SingleMedium")
-    return singlePlan
+
+    switch (env) {
+        case 'production' :
+            const lastPlan = await getLastPlan()
+            const singlePlan = lastPlan.filter(process => process['pack_station'] ==="G4: SingleMedium")
+            return singlePlan
+        case 'developpement' :
+            return new Promise ((res,rej) => res(singlePlanTemplate))
+        default :
+            throw new Error("environnement not define in getLastPlanSingle")
+    }
 }
 
 export const singlePlanTemplate = [
